@@ -1,0 +1,7 @@
+
+group("tersbox_fter") {
+  deps = [
+    "heightmap:tersbox_fter_heightmap",
+    "base:tersbox_fter_base",
+  ]
+}

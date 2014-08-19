@@ -1,0 +1,6 @@
+executable("tersbox_fter_base") {
+  sources = ["terrain_data.cc"]
+  deps = ["//azer/render:render",
+          "//base:appinit",
+         ]
+}

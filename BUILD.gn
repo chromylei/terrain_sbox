@@ -1,0 +1,6 @@
+
+group("tersbox") {
+  deps = [
+    "fter:tersbox_fter",
+  ]
+}
