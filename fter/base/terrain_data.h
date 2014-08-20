@@ -9,10 +9,10 @@ class TerrainData {
  public:
   TerrainData(int width)
       : kWidth(width) {
-    heightmap_.reset(width * width * sizeof(float));
+    heightmap_.reset(new float[width * width]);
   }
 
-  void Save(const ::base::FilePath& path);
+  bool Save(const ::base::FilePath& path);
   void Gen(float heightrange, float fRoughness);
  private:
   void Gen(int left, int top, int right, int bottom,
