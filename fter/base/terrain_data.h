@@ -15,18 +15,12 @@ class TerrainData {
   }
 
   bool Save(const ::base::FilePath& path);
-  void Gen();
+  void GenPlasma();
  private:
-  void Gen(int left, int top, int right, int bottom, float heightrange);
-  void GenTopMid(int left, int top, int right, int bottom, float heightrange);
-  void GenBottomMid(int left, int top, int right, int bottom, float heightrange);
-  void GenLeftMid(int left, int top, int right, int bottom, float heightrange);
-  void GenRightMid(int left, int top, int right, int bottom, float heightrange);
-  void GenCenter(int left, int top, int right, int bottom, float heightrange);
-
   float GenHeight(float avg, float heightrange);
   float GetHeight(int x, int y);
   void SetHeight(int x, int y, float h);
+  void NormalizeHeightmap();
   const int kWidth;
   const float fRoughness;
   const float fRange;

@@ -2,43 +2,74 @@
 
 
 #include <cmath>
+#include <limits>
 #include "base/rand_util.h"
 #include "azer/util/image.h"
 
 
-void TerrainData::Gen() {
-  float heightrange = fRange;
-  float height1 = GenHeight(heightrange / 2, heightrange);
-  float height2 = GenHeight(heightrange / 2, heightrange);
-  float height3 = GenHeight(heightrange / 2, heightrange);
-  float height4 = GenHeight(heightrange / 2, heightrange);
-  SetHeight(0, 0, height1);
-  SetHeight(0, kWidth-1, height2);
-  SetHeight(kWidth-1, 0, height3);
-  SetHeight(kWidth-1, kWidth-1, height4);
-  float hrange = heightrange * std::pow(2, -fRoughness);
-  Gen(0, 0, kWidth - 1, kWidth - 1, hrange);
-}
+void TerrainData::GenPlasma() {
+  memset(heightmap_.get(), 0, sizeof(float) * kWidth * kWidth);
+  int rect = kWidth;
+  float hr = 256;
+  SetHeight(0, 0, 0.0f);
+  while (rect > 0) {
+    /*
+      a.......b
+      .       .
+      .       .
+      .   e   .
+      .       .
+      .       .
+      c.......d
+     */
+    for (int i = 0 ; i < kWidth; i+= rect) {
+      for (int j = 0 ; j < kWidth; j+= rect) {
+        float height_a = GetHeight(i, j);
+        float height_b = GetHeight(i, (j + rect) % kWidth);
+        float height_c = GetHeight((i + rect) % kWidth, j);
+        float height_d = GetHeight((i + rect) % kWidth, (j + rect) % kWidth);
+        float avg = (height_a + height_b + height_c + height_d) / 4.0;
+        SetHeight(i + rect / 2, j + rect / 2, GenHeight(avg, hr));
+      }
+    }
 
-void TerrainData::Gen(int left, int top, int right, int bottom,
-                      float heightrange) {
-  if (right - left <= 1 || bottom - top <= 1) {
-    return;
+    /*
+           .......
+           .     .
+           .     .
+           .  d  .
+           .     .
+           .     .
+     ......a..g..b
+     .     .     .
+     .     .     .
+     .  e  h  f  .
+     .     .     .
+     .     .     .
+     ......c......
+     g = (d+f+a+b)/4 + random
+     h = (a+c+e+f)/4 + random
+    */
+    for (int i = 0; i < kWidth; i+= rect) {
+      for (int j = 0; j < kWidth; j += rect) {
+        float height_a = GetHeight(i, j);
+        float height_b = GetHeight(i, (j + rect) % kWidth);
+        float height_c = GetHeight((i + rect) % kWidth, j);
+        float height_d = GetHeight((i - rect / 2 + kWidth) % kWidth, j + rect / 2);
+        float height_e = GetHeight(i + rect / 2, (j - rect / 2 + kWidth) % kWidth);
+        float height_f = GetHeight(i + rect / 2, j + rect / 2);
+        float height_g_avg = (height_a + height_b + height_d + height_f) / 4;
+        float height_g = GenHeight(height_g_avg, hr);
+        float height_h_avg = (height_a + height_c + height_e + height_f) / 4;
+        float height_h = GenHeight(height_h_avg, hr);
+        SetHeight(i, j + rect / 2, height_g);
+        SetHeight(i + rect / 2, j, height_h);
+      }
+    }
+
+    rect /= 2;
+    hr *= std::pow(2, -fRoughness);
   }
-  int midpos_x = (left + right) / 2;
-  int midpos_y = (top + bottom) / 2;
-  float hrange = heightrange * std::pow(2, -fRoughness);
-
-  GenCenter(left, top, right, bottom, heightrange);
-  GenLeftMid(left, top, right, bottom, heightrange);
-  GenRightMid(left, top, right, bottom, heightrange);
-  GenTopMid(left, top, right, bottom, heightrange);
-  GenBottomMid(left, top, right, bottom, heightrange);
-  
-  Gen(left, top, midpos_x, midpos_y, hrange);
-  Gen(midpos_x, top, right, midpos_y, hrange);
-  Gen(left, midpos_y, midpos_x, bottom, hrange);
-  Gen(midpos_x, midpos_y, right, bottom, hrange);
 }
 
 float TerrainData::GenHeight(float avg, float heightrange) {
@@ -46,7 +77,29 @@ float TerrainData::GenHeight(float avg, float heightrange) {
   return avg + (r - 0.5) * heightrange;
 }
 
+void TerrainData::NormalizeHeightmap() {
+  float minh = std::numeric_limits<float>::max();
+  float maxh = -std::numeric_limits<float>::max();
+  for (int i = 0; i < kWidth; ++i) {
+    for (int j = 0; j < kWidth; ++j) {
+      float h = GetHeight(i, j);
+      if (h > maxh) maxh = h;
+      if (h < minh) minh = h;
+    }
+  }
+
+  float range = maxh - minh;
+  for (int i = 0; i < kWidth; ++i) {
+    for (int j = 0; j < kWidth; ++j) {
+      float h = (GetHeight(i, j) - minh) / range * fRange;
+      SetHeight(i, j, h);
+    }
+  }
+}
+
 bool TerrainData::Save(const ::base::FilePath& path) {
+  NormalizeHeightmap();
+
   azer::Image image(kWidth, kWidth, azer::kRGBA8);
   uint8* ptr = (uint8*)image.data();
   for (int i = 0; i < kWidth; ++i) {
@@ -69,57 +122,8 @@ void TerrainData::SetHeight(int x, int y, float h) {
 }
 
 float TerrainData::GetHeight(int x, int y) {
+  CHECK (x >= 0 && x < kWidth && y >= 0 && y < kWidth);
   float* heightmap = heightmap_.get();
-  if (x >= 0 && x < kWidth && y >= 0 && y < kWidth) {
-    return heightmap[x * kWidth + y];
-  } else {
-    return 1.0f;
-  }
+  return heightmap[x * kWidth + y];
 }
 
-void TerrainData::GenCenter(int left, int top, int right, int bottom,
-                             float heightrange) {
-  float* heightmap = heightmap_.get();
-  float height1 = GetHeight(top, left);
-  float height2 = GetHeight(top, right);
-  float height3 = GetHeight(bottom, left);
-  float height4 = GetHeight(bottom, right);
-  float avg = (height1 + height2 + height3 + height4) / 4.0f;
-  SetHeight((top + bottom) / 2, (left + right) / 2, GenHeight(avg, heightrange));
-}
-
-void TerrainData::GenTopMid(int left, int top, int right, int bottom,
-                             float heightrange) {
-  float* heightmap = heightmap_.get();
-  float height1 = GetHeight(top, left);
-  float height2 = GetHeight(top, right);
-  float avg = (height1 + height2) / 2.0f;
-  SetHeight(top, (left + right) / 2, GenHeight(avg, heightrange));
-}
-
-void TerrainData::GenBottomMid(int left, int top, int right, int bottom,
-                                float heightrange) {
-  float* heightmap = heightmap_.get();
-  float height1 = GetHeight(bottom, left);
-  float height2 = GetHeight(bottom, right);
-  float avg = (height1 + height2) / 2.0f;
-  SetHeight(bottom, (left + right) / 2, GenHeight(avg, heightrange));
-}
-
-void TerrainData::GenLeftMid(int left, int top, int right, int bottom,
-                              float heightrange) {
-  float* heightmap = heightmap_.get();
-  float height1 = GetHeight(top, left);
-  float height2 = GetHeight(bottom, left);
-  float avg = (height1 + height2) / 2.0f;
-  SetHeight((top + bottom) / 2, left, GenHeight(avg, heightrange));
-}
-
-void TerrainData::GenRightMid(int left, int top, int right, int bottom,
-                               float heightrange) {
-  float* heightmap = heightmap_.get();
-  float height1 = GetHeight(top, right);
-  float height2 = GetHeight(bottom, right);
-  float avg = (height1 + height2) / 2.0f;
-  SetHeight((top + bottom) / 2, right, GenHeight(avg, heightrange));
-}
