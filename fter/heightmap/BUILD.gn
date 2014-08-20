@@ -1,8 +1,17 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_fter_heightmap_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
 
 executable("tersbox_fter_heightmap") {
   sources = ["main.cc"]
   deps = ["//tersbox/fter/base:tersbox_fter_base",
           "//azer/render:render",
+          "//azer/util:azer_util",
           "//base:appinit",
+          ":tersbox_fter_heightmap_effect",
          ]
 }

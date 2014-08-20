@@ -58,14 +58,11 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
       new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
   DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata->pointer();
-  int cnt = 0;
-  for (int i = 0; i < tile_.GetCellNum(); ++i) {
-    for (int j = 0; j < tile_.GetCellNum(); ++j) {
-      const azer::Vector3& pos = tile_.vertices()[cnt++];
-      DiffuseEffect::Vertex* v = vertex + cnt;
-      v->position = azer::Vector4(pos, 1.0f) * 0.05f;
-      v++;
-    }
+  DiffuseEffect::Vertex* v = vertex;
+  for (int i = 0; i < tile_.GetVertexNum(); ++i) {
+    const azer::Vector3& pos = tile_.vertices()[i];
+    v->position = azer::Vector4(pos.x * 0.1, 0, pos.z * 0.1, 1.0f);
+    v++;
   }
 
   azer::IndicesDataPtr idata_ptr(

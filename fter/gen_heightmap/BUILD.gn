@@ -1,0 +1,8 @@
+
+executable("tersbox_fter_gen_heightmap") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//base:appinit",
+         ]
+}
