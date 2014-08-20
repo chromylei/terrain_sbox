@@ -1,5 +1,10 @@
 static_library("tersbox_fter_base") {
-  sources = ["terrain_data.cc"]
+  sources = [
+    "terrain_data.cc",
+    "terrain_data.h",
+    "camera_control.cc",
+    "camera_control.h",
+  ]
   deps = ["//azer/render:render",
           "//azer/util:azer_util",
           "//base:appinit",
