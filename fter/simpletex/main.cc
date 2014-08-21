@@ -56,19 +56,20 @@ void MainDelegate::Init() {
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new SimpleTexEffect(shaders.GetShaderVec(), rs));
-  heightmap_ = azer::util::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
+  heightmap_ = azer::util::LoadImageFromFile(FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 
-  light_.dir = azer::Vector4(0.0f, -0.8f, 0.4f, 1.0f);
+  light_.dir = azer::Vector4(0.0f, -0.6f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
-  azer::ImagePtr tex(azer::util::LoadImageFromFile(::base::FilePath(TEX_PATH)));
+  base::FilePath color_tex_path(TEX_PATH);
+  azer::ImagePtr tex(azer::util::LoadImageFromFile(color_tex_path));
+  azer::util::SaveImage(tex.get(), FilePath(FILE_PATH_LITERAL("tmp.bmp")));
   color_tex_.reset(rs->CreateTexture(texopt, tex.get()));
 }
-
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
@@ -89,16 +90,14 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   tile_.CalcNormal();
 
   SimpleTexEffect::Vertex* vertex = (SimpleTexEffect::Vertex*)vdata->pointer();
-  
+  float cell = 1.0f / (float)tile_.GetCellNum();
   cnt = 0;
   for (int i = 0; i < tile_.GetCellNum(); ++i) {
     for (int j = 0; j < tile_.GetCellNum(); ++j) {
       SimpleTexEffect::Vertex* v = vertex + cnt;
       v->position = tile_.vertices()[cnt];
       v->normal = tile_.normal()[cnt];
-      float tx = 1.0f / tile_.GetCellNum() * j;
-      float ty = 1.0f / tile_.GetCellNum() * i;
-      v->texcoord = azer::Vector2(tx, ty);
+      v->texcoord0 = azer::Vector2(cell * i, cell * j);
       cnt++;
     }
   }

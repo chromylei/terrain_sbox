@@ -20,26 +20,26 @@ exchange struct VsOutput {
   [semantic="position" system="true"]
   vec4 position;
   vec4 normal;
-  vec2 texcoord;
+  vec2 texcoord0;
 };
 
 exchange struct VSInput {
   vec3 position;
   vec3 normal;
-  vec2 texcoord;
+  vec2 texcoord0;
 };
 
 VsOutput vs_main(VSInput input) {
   VsOutput o;
   o.position = pvw * vec4(input.position, 1.0);
   o.normal = world * vec4(input.normal, 0.0);
-  o.texcoord =input.texcoord;
+  o.texcoord0 =input.texcoord0;
   return o;
 }
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
-  vec4 diffuse = sample2D(color_tex, o.texcoord) + vec4(0.3, 0.3, 0.3, 0.0);
+  vec4 diffuse = sample2D(color_tex, o.texcoord0);
   float diffuse_factor = clamp(dot(normalize(o.normal.xyz), -light.dir.xyz),
                                0.0, 1.0);
   vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
