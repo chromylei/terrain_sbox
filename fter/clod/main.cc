@@ -12,15 +12,15 @@
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/clod/"
 #define SHADER_NAME "clod.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/fter/res/heightmap003.bmp")
-#define TEX_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/grass.tga")
+#define TEX_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/colorm001.bmp")
 #define DETAIL_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/detailmap.tga")
 using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(1024)
-      , kDetailMap(1024 / 16) {
+      : tile_(8)
+      , kDetailMap(256 / 32) {
   }
   virtual void OnCreate() {}
 
@@ -65,7 +65,7 @@ void MainDelegate::Init() {
 
   light_.dir = azer::Vector4(0.0f, -0.7f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-  light_.ambient = azer::Vector4(0.2f, 0.20f, 0.20f, 1.0f);
+  light_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;

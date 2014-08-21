@@ -16,7 +16,7 @@ using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() : tile_(256) {
+  MainDelegate() : tile_(8) {
   }
   virtual void OnCreate() {}
 
