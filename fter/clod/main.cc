@@ -19,7 +19,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(1024)
+      : tile_(10)
       , kDetailMap(1024 / 16) {
   }
   virtual void OnCreate() {}
