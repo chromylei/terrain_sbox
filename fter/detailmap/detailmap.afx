@@ -1,0 +1,53 @@
+technique [
+    name = "detailmap"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="DetailmapEffect"
+           ];
+
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetColorTex"] uniform Texture2D color_tex;
+[uniform_func="SetDetailTex"] uniform Texture2D detail_tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec4 normal;
+  vec2 texcoord0;
+  vec2 texcoord1;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec3 normal;
+  vec2 texcoord0;
+  vec2 texcoord1;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.normal = world * vec4(input.normal, 0.0);
+  o.texcoord0 =input.texcoord0;
+  o.texcoord1 =input.texcoord1;
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  vec4 diffuse = sample2D(color_tex, o.texcoord0);
+  vec4 detail = sample2D(detail_tex, o.texcoord1);
+  float diffuse_factor = clamp(dot(normalize(o.normal.xyz), -light.dir.xyz),
+                               0.0, 1.0);
+  vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
+  return vec4(light_factor.xyz * diffuse.xyz * detail.xyz, 1.0);
+}
+

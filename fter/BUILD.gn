@@ -8,5 +8,6 @@ group("tersbox_fter") {
     "dirlight:tersbox_fter_dirlight",
     "zbuffer:tersbox_fter_zbuffer",
     "simpletex:tersbox_fter_simpletex",
+    "detailmap:tersbox_fter_detailmap",
   ]
 }
