@@ -9,5 +9,6 @@ group("tersbox_fter") {
     "zbuffer:tersbox_fter_zbuffer",
     "simpletex:tersbox_fter_simpletex",
     "detailmap:tersbox_fter_detailmap",
+    "lightmap:tersbox_fter_lightmap",
   ]
 }
