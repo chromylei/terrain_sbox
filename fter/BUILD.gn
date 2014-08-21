@@ -10,5 +10,6 @@ group("tersbox_fter") {
     "simpletex:tersbox_fter_simpletex",
     "detailmap:tersbox_fter_detailmap",
     "lightmap:tersbox_fter_lightmap",
+    "clod:tersbox_fter_clod",
   ]
 }
