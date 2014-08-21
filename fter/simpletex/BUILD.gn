@@ -1,0 +1,17 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_fter_simpletex_effect") {
+  source = "simpletex.afx"
+  filename = "simpletex"
+}
+
+
+executable("tersbox_fter_simpletex") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//azer/util:azer_util",
+          "//base:appinit",
+          ":tersbox_fter_simpletex_effect",
+         ]
+}

@@ -8,10 +8,11 @@
 
 #include <tchar.h>
 
-#include "dirlight.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/dirlight/"
-#define SHADER_NAME "dirlight.afx"
+#include "simpletex.afx.h"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/simpletex/"
+#define SHADER_NAME "simpletex.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/fter/res/heightmap002.bmp")
+#define TEX_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/grass.tga")
 using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
@@ -31,8 +32,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
-  std::unique_ptr<DirlightEffect> effect_;
-  DirlightEffect::DirLight light_;
+  azer::TexturePtr color_tex_;
+  std::unique_ptr<SimpleTexEffect> effect_;
+  SimpleTexEffect::DirLight light_;
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -53,13 +55,18 @@ void MainDelegate::Init() {
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
-  effect_.reset(new DirlightEffect(shaders.GetShaderVec(), rs));
+  effect_.reset(new SimpleTexEffect(shaders.GetShaderVec(), rs));
   heightmap_ = azer::util::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 
   light_.dir = azer::Vector4(0.0f, -0.8f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
+
+  azer::Texture::Options texopt;
+  texopt.target = azer::Texture::kShaderResource;
+  azer::ImagePtr tex(azer::util::LoadImageFromFile(::base::FilePath(TEX_PATH)));
+  color_tex_.reset(rs->CreateTexture(texopt, tex.get()));
 }
 
 
@@ -81,12 +88,19 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   CHECK_EQ(cnt, tile_.GetVertexNum());
   tile_.CalcNormal();
 
-  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
-  DirlightEffect::Vertex* v = vertex;
-  for (int i = 0; i < tile_.GetVertexNum(); ++i) {
-    v->position = tile_.vertices()[i];
-    v->normal = tile_.normal()[i];
-    v++;
+  SimpleTexEffect::Vertex* vertex = (SimpleTexEffect::Vertex*)vdata->pointer();
+  
+  cnt = 0;
+  for (int i = 0; i < tile_.GetCellNum(); ++i) {
+    for (int j = 0; j < tile_.GetCellNum(); ++j) {
+      SimpleTexEffect::Vertex* v = vertex + cnt;
+      v->position = tile_.vertices()[cnt];
+      v->normal = tile_.normal()[cnt];
+      float tx = 1.0f / tile_.GetCellNum() * j;
+      float ty = 1.0f / tile_.GetCellNum() * i;
+      v->texcoord = azer::Vector2(tx, ty);
+      cnt++;
+    }
   }
 
   azer::IndicesDataPtr idata_ptr(
@@ -117,7 +131,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetWorld(world);
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->SetDirLight(light_);
-  effect_->SetDiffuse(azer::Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+  effect_->SetColorTex(color_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 }
