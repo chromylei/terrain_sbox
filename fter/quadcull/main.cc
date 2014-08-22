@@ -9,7 +9,7 @@
 #include <tchar.h>
 
 #include "clod.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/clod/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/quadcull/"
 #define SHADER_NAME "clod.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/fter/res/heightmap003.bmp")
 #define TEX_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/colorm001.bmp")
@@ -20,7 +20,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
       : tile_(8)
-      , kDetailMap(256 / 32) {
+      , kDetailMap(256 / 32)
+      , frustrum_split_(&tile_, &camera_.frustrum())
+      , quadtree_(tile_.level()) {
   }
   virtual void OnCreate() {}
 
@@ -38,6 +40,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::TexturePtr color_tex_;
   azer::TexturePtr detail_tex_;
   std::unique_ptr<ClodEffect> effect_;
+  azer::util::FrustrumSplit frustrum_split_;
+  azer::util::QuadTree quadtree_;
+  int32 indices_num_;
   ClodEffect::DirLight light_;
   const int kDetailMap;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
@@ -117,7 +122,11 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
          sizeof(int32) * tile_.indices().size());
 
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
+  azer::IndicesBuffer::Options ibopt;
+  ibopt.cpu_access = azer::kCPUWrite;
+  ibopt.usage = azer::GraphicBuffer::kDynamic;
+  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
+  indices_num_ = tile_.indices().size();
 }
 
 
@@ -125,6 +134,24 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
   azer::Radians camera_speed(5.0f * azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
+
+  /*
+  std::vector<azer::util::Tile::Pitch> pitches;
+  quadtree_.Split(&frustrum_split_, &pitches);
+  std::vector<int32> indices;
+  for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
+    azer::util::InitPitchIndices(*iter, &indices);
+  }
+  */
+
+  /*
+  indices_num_ = indices.size();
+  if (indices_num_ > 0u) {
+    azer::LockDataPtr data(ib_->map(azer::kWriteDiscard));
+    memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
+    ib_->unmap();
+  }
+  */
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -134,14 +161,17 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
 
-  azer::Matrix4 world = std::move(azer::Scale(0.5f, 0.5f, 0.5f));
-  effect_->SetWorld(world);
-  effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
-  effect_->SetDirLight(light_);
-  effect_->SetColorTex(color_tex_);
-  effect_->SetDetailTex(detail_tex_);
-  effect_->Use(renderer);
-  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+  if (indices_num_ > 0) {
+    azer::Matrix4 world = std::move(azer::Scale(0.5f, 0.5f, 0.5f));
+    effect_->SetWorld(world);
+    effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
+    effect_->SetDirLight(light_);
+    effect_->SetColorTex(color_tex_);
+    effect_->SetDetailTex(detail_tex_);
+    effect_->Use(renderer);
+    renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList,
+                        indices_num_ * 3, 0, 0);
+  }
 }
 
 int main(int argc, char* argv[]) {
