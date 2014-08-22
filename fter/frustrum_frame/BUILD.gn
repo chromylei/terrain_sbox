@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_fter_frustrum_frame_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+
+executable("tersbox_fter_frustrum_frame") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_fter_frustrum_frame_effect",
+         ]
+}

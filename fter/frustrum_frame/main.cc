@@ -5,19 +5,18 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tersbox/fter/base/camera_control.h"
+#include "tersbox/fter/base/frustrum_frame.h"
 
 #include <tchar.h>
 
 #include "diffuse.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/grid/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/frustrum_frame/"
 #define SHADER_NAME "diffuse.afx"
-const char* kHeightmapPath = "sbox/terrain/res/heightmap01.bmp";
 using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() : tile_(8) {
-  }
+  MainDelegate(): tile_(8) {}
   virtual void OnCreate() {}
 
   void Init();
@@ -27,6 +26,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
   azer::Camera camera_;
+  FrustrumFrame frame_;
   azer::util::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
@@ -43,7 +43,8 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 0.0f, 5.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 5.0f, 5.0f));
+  camera_.SetLookAt(azer::Vector3(0.0f, 5.0f, 0.0f));
   tile_.Init();
 
   azer::ShaderArray shaders;
@@ -51,6 +52,8 @@ void MainDelegate::Init() {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
   InitPhysicsBuffer(rs);
+
+  frame_.Init(rs);
 }
 
 
@@ -77,9 +80,14 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
 
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
+  azer::RenderSystem* rs = azer::RenderSystem::Current();
   float rspeed = 3.14f * 2.0f / 4.0f;
   azer::Radians camera_speed(azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
+
+  if( ::GetAsyncKeyState('Z') & 0x8000f || time < 0.001) {
+    frame_.Update(camera_);
+  }
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -94,6 +102,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+  frame_.Render(camera_.GetProjViewMatrix(), renderer);
 }
 
 int main(int argc, char* argv[]) {

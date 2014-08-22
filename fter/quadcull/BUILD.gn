@@ -1,17 +1,17 @@
 import("//build/templates/afx.gni")
 
-afx("tersbox_fter_clod_effect") {
+afx("tersbox_fter_quadcull_effect") {
   source = "clod.afx"
   filename = "clod"
 }
 
 
-executable("tersbox_fter_clod") {
+executable("tersbox_fter_quadcull") {
   sources = ["main.cc"]
   deps = ["//tersbox/fter/base:tersbox_fter_base",
           "//azer/render:render",
           "//azer/util:azer_util",
           "//base:appinit",
-          ":tersbox_fter_clod_effect",
+          ":tersbox_fter_quadcull_effect",
          ]
 }
