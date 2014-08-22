@@ -20,10 +20,10 @@ void FrustrumFrame::Init(azer::RenderSystem* rs) {
     azer::Vector4( 1.0f,  1.0f, 0.0f, 1.0f),
     azer::Vector4( 1.0f, -1.0f, 0.0f, 1.0f),
     azer::Vector4(-1.0f, -1.0f, 0.0f, 1.0f),
-    azer::Vector4(-1.0f,  1.0f, 1.0f, 1.0f),
-    azer::Vector4( 1.0f,  1.0f, 1.0f, 1.0f),
-    azer::Vector4( 1.0f, -1.0f, 1.0f, 1.0f),
-    azer::Vector4(-1.0f, -1.0f, 1.0f, 1.0f),
+    azer::Vector4(-1.0f,  1.0f, 0.95f, 1.0f),
+    azer::Vector4( 1.0f,  1.0f, 0.95f, 1.0f),
+    azer::Vector4( 1.0f, -1.0f, 0.95f, 1.0f),
+    azer::Vector4(-1.0f, -1.0f, 0.95f, 1.0f),
   };
   azer::VertexDataPtr vdata(new azer::VertexData(effect->GetVertexDesc(),
                                                  arraysize(vertices)));
@@ -42,11 +42,11 @@ void FrustrumFrame::Init(azer::RenderSystem* rs) {
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
 }
 
-void FrustrumFrame::Update(azer::RenderSystem* rs) {
-  inverse_mat_ = std::move(camera_.GetProjViewMatrix().Inverse());
+void FrustrumFrame::Update(const azer::Camera& camera) {
+  inverse_mat_ = std::move(camera.GetProjViewMatrix().Inverse());
 }
 
-void FrustrumFrame::Render(azer::Matrix4& pv, azer::Renderer* renderer) {
+void FrustrumFrame::Render(const azer::Matrix4& pv, azer::Renderer* renderer) {
   FrustrumFrameEffect* effect = (FrustrumFrameEffect*)effect_.get();
   effect->SetPVW(pv);
   effect->SetInverse(inverse_mat_);

@@ -4,6 +4,7 @@ group("tersbox_fter") {
     "base:tersbox_fter_base",
     "gen_heightmap:tersbox_fter_gen_heightmap",
     "grid:tersbox_fter_grid",
+    "frustrum_frame:tersbox_fter_frustrum_frame",
     "heightmap:tersbox_fter_heightmap",
     "dirlight:tersbox_fter_dirlight",
     "zbuffer:tersbox_fter_zbuffer",
