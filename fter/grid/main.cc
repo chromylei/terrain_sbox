@@ -61,7 +61,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
-    v->position = azer::Vector4(pos.x * 0.1, 0, pos.z * 0.1, 1.0f);
+    v->position = azer::Vector4(pos.x, 0, pos.z, 1.0f);
     v++;
   }
 

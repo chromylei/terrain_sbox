@@ -21,7 +21,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   MainDelegate()
       : tile_(8)
       , kDetailMap(256 / 32)
-      , frustrum_split_(&tile_, &camera_.frustrum())
+      , frustrum_split_(&tile_, &camera2_.frustrum())
       , quadtree_(tile_.level()) {
   }
   virtual void OnCreate() {}
@@ -33,6 +33,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
   azer::Camera camera_;
+  azer::Camera camera2_;
   azer::util::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
@@ -59,6 +60,10 @@ void MainDelegate::Init() {
   camera_.SetPosition(azer::Vector3(0.0f, 20.0f, -5.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 20.0f, 0.0f));
   camera_.frustrum().set_near(0.1f);
+
+  camera2_.SetPosition(azer::Vector3(0.0f, 20.0f, -5.0f));
+  camera2_.SetLookAt(azer::Vector3(0.0f, 20.0f, 0.0f));
+  camera2_.frustrum().set_near(0.1f);
   tile_.Init();
 
   azer::ShaderArray shaders;
@@ -136,7 +141,7 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 
   std::vector<azer::util::Tile::Pitch> pitches;
-  quadtree_.Split(&frustrum_split_, &pitches);
+  quadtree_.Split(6, &frustrum_split_, &pitches);
   std::vector<int32> indices;
   for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
     azer::util::InitPitchIndices(*iter, &indices);
@@ -166,6 +171,9 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
     effect_->Use(renderer);
     renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList,
                         indices_num_ * 3, 0, 0);
+    // LOG(ERROR) << " NO..: " << indices_num_;
+  } else {
+    LOG(ERROR) << " NO..";
   }
 }
 
