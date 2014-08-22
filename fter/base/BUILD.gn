@@ -8,5 +8,6 @@ static_library("tersbox_fter_base") {
   deps = ["//azer/render:render",
           "//azer/util:azer_util",
           "//base:appinit",
+          "//azer/render_system/d3d11:d3d11_render_system",
          ]
 }

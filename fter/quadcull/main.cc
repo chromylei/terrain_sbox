@@ -135,23 +135,18 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   azer::Radians camera_speed(5.0f * azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 
-  /*
   std::vector<azer::util::Tile::Pitch> pitches;
   quadtree_.Split(&frustrum_split_, &pitches);
   std::vector<int32> indices;
   for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
     azer::util::InitPitchIndices(*iter, &indices);
   }
-  */
-
-  /*
   indices_num_ = indices.size();
   if (indices_num_ > 0u) {
     azer::LockDataPtr data(ib_->map(azer::kWriteDiscard));
     memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
     ib_->unmap();
   }
-  */
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {

@@ -11,6 +11,5 @@ group("tersbox_fter") {
     "detailmap:tersbox_fter_detailmap",
     "lightmap:tersbox_fter_lightmap",
     "quadcull:tersbox_fter_quadcull",
-    "//azer/render_system/d3d11:d3d11_render_system",
   ]
 }
