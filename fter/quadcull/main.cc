@@ -141,10 +141,10 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 
   std::vector<azer::util::Tile::Pitch> pitches;
-  quadtree_.Split(6, &frustrum_split_, &pitches);
+  quadtree_.Split(4, &frustrum_split_, &pitches);
   std::vector<int32> indices;
   for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
-    azer::util::InitPitchIndices(*iter, &indices);
+    tile_.InitPitchIndices(0, *iter, &indices);
   }
   indices_num_ = indices.size();
   if (indices_num_ > 0u) {
@@ -170,7 +170,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
     effect_->SetDetailTex(detail_tex_);
     effect_->Use(renderer);
     renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList,
-                        indices_num_ * 3, 0, 0);
+                        indices_num_, 0, 0);
     // LOG(ERROR) << " NO..: " << indices_num_;
   } else {
     LOG(ERROR) << " NO..";
