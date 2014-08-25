@@ -43,15 +43,21 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
 
 void CubeFrame::Render(azer::Vector3& pos1, azer::Vector3& pos2,
                        azer::Renderer* renderer, const azer::Matrix4& pv) {
-  azer::Vector3 scale = pos2 - pos1;
+  azer::Vector3 p1 = azer::Vector3(std::min(pos1.x, pos2.x),
+                                   std::min(pos1.y, pos2.y),
+                                   std::min(pos1.z, pos2.z));
+  azer::Vector3 p2 = azer::Vector3(std::max(pos1.x, pos2.x),
+                                   std::max(pos1.y, pos2.y),
+                                   std::max(pos1.z, pos2.z));
+  azer::Vector3 scale = p2 - p1;
   azer::Matrix4 s = std::move(azer::Scale(scale));
-  azer::Matrix4 trans = std::move(azer::Translate(pos1));
+  azer::Matrix4 trans = std::move(azer::Translate(p1));
   azer::Matrix4 world = std::move(trans * s);
   azer::Matrix4 pvw = std::move(pv * world);
 
   FrameEffect* effect = (FrameEffect*)effect_.get();
   effect->SetPVW(pvw);
-  effect->SetDiffuse(azer::Vector4(0.0f, 1.0f, 1.0f, 1.0f));
+  effect->SetDiffuse(diffuse_);
   effect->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kLineList);
 }

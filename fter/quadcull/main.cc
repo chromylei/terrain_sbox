@@ -4,6 +4,7 @@
 #include "base/files/file_path.h"
 #include "tersbox/fter/base/camera_control.h"
 #include "tersbox/fter/base/frustrum_frame.h"
+#include "tersbox/fter/base/cubeframe.h"
 #include "tersbox/fter/quadcull/terrain.h"
 
 #include <tchar.h>
@@ -21,9 +22,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   virtual void OnQuit() {}
  private:
   azer::Camera camera_;
-  azer::Camera camera2_;
   Terrain terrain_;
   FrustrumFrame frame_;
+  CubeFrame cubeframe_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -39,12 +40,10 @@ void MainDelegate::Init() {
   camera_.SetLookAt(azer::Vector3(0.0f, 20.0f, 0.0f));
   camera_.frustrum().set_near(0.1f);
 
-  camera2_.SetPosition(azer::Vector3(0.0f, 20.0f, -5.0f));
-  camera2_.SetLookAt(azer::Vector3(0.0f, 20.0f, 0.0f));
-  camera2_.frustrum().set_near(0.1f);
-
   terrain_.Init(rs);
   frame_.Init(rs);
+  cubeframe_.Init(rs);
+  cubeframe_.SetDiffuse(azer::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 
@@ -68,6 +67,15 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   terrain_.OnRenderScene(renderer);
 
   frame_.Render(camera_.GetProjViewMatrix(), renderer);
+
+/*
+  for (auto iter = terrain_.pitches().begin();
+       iter != terrain_.pitches().end(); ++iter) {
+    azer::Vector3& p1 = terrain_.tile().vertex(iter->left, iter->top);
+    azer::Vector3& p2 = terrain_.tile().vertex(iter->right, iter->bottom);
+    cubeframe_.Render(p1, p2, renderer, camera_.GetProjViewMatrix());
+  }
+*/
 }
 
 int main(int argc, char* argv[]) {

@@ -5,12 +5,6 @@ technique [
     class_name="FrameEffect"
            ];
 
-struct DirLight {
-  vec4 dir;
-  vec4 diffuse;
-  vec4 ambient;
-};
-
 [uniform_func="SetPVW"] uniform mat4 pvw;
 [uniform_func="SetDiffuse"] uniform vec4 diffuse;
 
@@ -25,7 +19,7 @@ exchange struct VSInput {
 
 VsOutput vs_main(VSInput input) {
   VsOutput o;
-  o.position = pvw * o.position;
+  o.position = pvw * input.position;
   return o;
 }
 

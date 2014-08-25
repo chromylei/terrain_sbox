@@ -32,6 +32,8 @@ void Terrain::Init(azer::RenderSystem* rs) {
   base::FilePath detail_tex_path(DETAIL_PATH);
   azer::ImagePtr tex2(azer::util::LoadImageFromFile(detail_tex_path));
   detail_tex_.reset(rs->CreateTexture(texopt, tex2.get()));
+
+  cubeframe_.Init(rs);
 }
 
 
@@ -82,10 +84,11 @@ void Terrain::InitPhysicsBuffer(azer::RenderSystem* rs) {
 }
 
 void Terrain::OnUpdateScene(double time, float delta_time) {
-  std::vector<azer::util::Tile::Pitch> pitches;
-  quadtree_.Split(4, &frustrum_split_, &pitches);
+  pitches_.clear();
+  frustrum_split_.clear();
+  quadtree_.Split(4, &frustrum_split_, &pitches_);
   std::vector<int32> indices;
-  for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
+  for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
     tile_.InitPitchIndices(0, *iter, &indices);
   }
   indices_num_ = indices.size();
@@ -108,5 +111,57 @@ void Terrain::OnRenderScene(azer::Renderer* renderer) {
     effect_->Use(renderer);
     renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList,
                         indices_num_, 0, 0);
+  }
+
+  cubeframe_.SetDiffuse(azer::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+  RenderPitch(frustrum_split_.partial_pitches_, camera_.GetProjViewMatrix(), renderer);
+  cubeframe_.SetDiffuse(azer::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+  RenderPitch(frustrum_split_.fully_pitches_, camera_.GetProjViewMatrix(), renderer);
+  cubeframe_.SetDiffuse(azer::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+  RenderPitch(frustrum_split_.none_pitches_, camera_.GetProjViewMatrix(), renderer);
+}
+
+void Terrain::RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
+                          const azer::Matrix4& pv, azer::Renderer* renderer) {
+  for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
+    azer::Vector3& p1 = tile_.vertex(iter->left, iter->top);
+    azer::Vector3& p2 = tile_.vertex(iter->right, iter->bottom);
+    cubeframe_.Render(p1, p2, renderer, pv);
+  }
+}
+
+
+using azer::util::QuadTree;
+
+void FrustrumSplit::clear() {
+  partial_pitches_.clear();
+  fully_pitches_.clear();
+  none_pitches_.clear();
+}
+
+QuadTree::Splitable::SplitRes FrustrumSplit::Split(const QuadTree::Node& node) {
+  
+  const azer::Vector3& minpos = tile_->vertex(node.pitch.left, node.pitch.top);
+  const azer::Vector3& maxpos = tile_->vertex(node.pitch.right,node.pitch.bottom);
+
+  azer::AxisAlignedBox box(azer::Vector3(minpos.x, tile_->miny(), minpos.z),
+                           azer::Vector3(maxpos.x, tile_->maxy(), maxpos.z));
+  azer::VisibleState state = box.IsVisible(*frustrum_, azer::Matrix4::kIdentity);
+  if (state == azer::kPartialVisible) {
+    partial_pitches_.push_back(node.pitch);
+    return kSplit;
+  } else if (state == azer::kFullyVisible) {
+    fully_pitches_.push_back(node.pitch);
+    return kKeep;
+  }
+
+  const azer::Vector3& pos = frustrum_->camera()->position();
+  if (pos.x >= minpos.x && pos.z >= minpos.z
+      && pos.x <= maxpos.x && pos.z <= maxpos.z) {
+    partial_pitches_.push_back(node.pitch);
+    return kSplit;
+  } else {
+    none_pitches_.push_back(node.pitch);
+    return kDrop;
   }
 }
