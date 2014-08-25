@@ -92,11 +92,11 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
       new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
   int cnt = 0;
-  for (int i = 0; i < tile_.GetCellNum(); ++i) {
-    for (int j = 0; j < tile_.GetCellNum(); ++j) {
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       const azer::Vector3& pos = tile_.vertices()[cnt];
-      int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_->width();
-      int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_->width();
+      int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_->width() - 1);
+      int ty = (pos.z - tile_.minz()) / tile_.z_range() * (heightmap_->height() - 1);
       uint32 rgba = heightmap_->pixel(tx, ty);
       float height = (rgba & 0x0000FF00) >> 8;
       tile_.SetHeight(i, j, height * 0.5f);
@@ -107,10 +107,10 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   tile_.CalcNormal();
 
   ClodEffect::Vertex* vertex = (ClodEffect::Vertex*)vdata->pointer();
-  float cell = 1.0f / (float)tile_.GetCellNum();
+  float cell = 1.0f / (float)tile_.GetGridLineNum();
   cnt = 0;
-  for (int i = 0; i < tile_.GetCellNum(); ++i) {
-    for (int j = 0; j < tile_.GetCellNum(); ++j) {
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       ClodEffect::Vertex* v = vertex + cnt;
       v->position = tile_.vertices()[cnt];
       v->normal = tile_.normal()[cnt];
