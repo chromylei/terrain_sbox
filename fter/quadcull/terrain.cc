@@ -114,9 +114,11 @@ void Terrain::OnRenderScene(azer::Renderer* renderer) {
   }
 
   cubeframe_.SetDiffuse(azer::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-  RenderPitch(frustrum_split_.partial_pitches_, camera_.GetProjViewMatrix(), renderer);
-  cubeframe_.SetDiffuse(azer::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
   RenderPitch(frustrum_split_.fully_pitches_, camera_.GetProjViewMatrix(), renderer);
+  
+  cubeframe_.SetDiffuse(azer::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+  RenderPitch(frustrum_split_.partial_pitches_, camera_.GetProjViewMatrix(), renderer);
+
   cubeframe_.SetDiffuse(azer::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
   RenderPitch(frustrum_split_.none_pitches_, camera_.GetProjViewMatrix(), renderer);
 }
