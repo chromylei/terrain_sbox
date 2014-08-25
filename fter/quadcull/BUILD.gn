@@ -7,7 +7,7 @@ afx("tersbox_fter_quadcull_effect") {
 
 
 executable("tersbox_fter_quadcull") {
-  sources = ["main.cc"]
+  sources = ["main.cc", "terrain.cc",]
   deps = ["//tersbox/fter/base:tersbox_fter_base",
           "//azer/render:render",
           "//azer/util:azer_util",
