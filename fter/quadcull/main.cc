@@ -3,6 +3,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tersbox/fter/base/camera_control.h"
+#include "tersbox/fter/base/frustrum_frame.h"
 #include "tersbox/fter/quadcull/terrain.h"
 
 #include <tchar.h>
@@ -22,6 +23,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Camera camera_;
   azer::Camera camera2_;
   Terrain terrain_;
+  FrustrumFrame frame_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -42,6 +44,7 @@ void MainDelegate::Init() {
   camera2_.frustrum().set_near(0.1f);
 
   terrain_.Init(rs);
+  frame_.Init(rs);
 }
 
 
@@ -49,7 +52,11 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
   azer::Radians camera_speed(5.0f * azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
-  terrain_.OnUpdateScene(time, delta_time);
+
+  if( ::GetAsyncKeyState('Z') & 0x8000f || time < 0.001) {
+    frame_.Update(camera_);
+    terrain_.OnUpdateScene(time, delta_time);
+  }
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -59,6 +66,8 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
   terrain_.OnRenderScene(renderer);
+
+  frame_.Render(camera_.GetProjViewMatrix(), renderer);
 }
 
 int main(int argc, char* argv[]) {

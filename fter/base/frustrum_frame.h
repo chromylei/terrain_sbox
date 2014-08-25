@@ -13,6 +13,7 @@ class FrustrumFrame {
  private:
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
+  azer::IndicesBufferPtr ibplane_;
   std::unique_ptr<azer::Effect> effect_;
   azer::Matrix4 inverse_mat_;
   DISALLOW_COPY_AND_ASSIGN(FrustrumFrame);
