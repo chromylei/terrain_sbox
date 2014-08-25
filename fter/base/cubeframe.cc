@@ -1,19 +1,19 @@
 #include "tersbox/fter/base/cubeframe.h"
 
-
+#include "azer/render/render.h"
 #include "frame_effect.afx.h"
 
 void CubeFrame::Init(azer::RenderSystem* rs) {
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader("out/dbg/gen/tersbox/fter/base/frame_effect.afx.vs",
-                               &shader));
+                               &shaders));
   CHECK(azer::LoadPixelShader("out/dbg/gen/tersbox/fter/base/frame_effect.afx.ps",
-                              &shader));
+                              &shaders));
   
-  FrameEffect* effect = new FameEffect(shaders.GetShaderVec(), rs);
+  FrameEffect* effect = new FrameEffect(shaders.GetShaderVec(), rs);
   effect_.reset(effect);
 
-  FrustrumFrameEffect::Vertex vertices[] = {
+  FrameEffect::Vertex vertices[] = {
     azer::Vector4(0.0f, 0.0f,  0.0f, 1.0f),
     azer::Vector4(1.0f, 0.0f,  0.0f, 1.0f),
     azer::Vector4(1.0f, 0.0f, -1.0f, 1.0f),
@@ -41,5 +41,17 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
 }
 
-void CubeFrame::Render(azer::Vector3& pos1, azer::Vector3& pos2) {
+void CubeFrame::Render(azer::Vector3& pos1, azer::Vector3& pos2,
+                       azer::Renderer* renderer, const azer::Matrix4& pv) {
+  azer::Vector3 scale = pos2 - pos1;
+  azer::Matrix4 s = std::move(azer::Scale(scale));
+  azer::Matrix4 trans = std::move(azer::Translate(pos1));
+  azer::Matrix4 world = std::move(trans * s);
+  azer::Matrix4 pvw = std::move(pv * world);
+
+  FrameEffect* effect = (FrameEffect*)effect_.get();
+  effect->SetPVW(pvw);
+  effect->SetDiffuse(azer::Vector4(0.0f, 1.0f, 1.0f, 1.0f));
+  effect->Use(renderer);
+  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kLineList);
 }

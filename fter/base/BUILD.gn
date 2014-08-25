@@ -5,11 +5,21 @@ afx("tersbox_fter_frame_effect") {
   filename = "frame_effect"
 }
 
+afx("tersbox_fter_frustrum_frame_effect") {
+  source = "frustrum_frame_effect.afx"
+  filename = "frustrum_frame_effect"
+}
+
 static_library("tersbox_fter_frustrum") {
-  sources = ["frustrum_frame.cc"]
+  sources = [
+    "frustrum_frame.cc",
+    "cubeframe.cc",
+    "cubeframe.h",
+  ]
   deps = ["//azer/render:render",
           "//azer/render_system/d3d11:d3d11_render_system",
           ":tersbox_fter_frame_effect",
+          ":tersbox_fter_frustrum_frame_effect",
           ]
 }
 

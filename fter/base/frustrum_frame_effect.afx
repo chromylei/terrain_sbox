@@ -1,8 +1,8 @@
 technique [
-    name = "frame_effect"
+    name = "frustrum_frame_effect"
     ps_main="ps_main"
     vs_main="vs_main"
-    class_name="FrameEffect"
+    class_name="FrustrumFrameEffect"
            ];
 
 struct DirLight {
@@ -12,6 +12,7 @@ struct DirLight {
 };
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetInverse"] uniform mat4 inverse;
 [uniform_func="SetDiffuse"] uniform vec4 diffuse;
 
 exchange struct VsOutput {
@@ -25,6 +26,7 @@ exchange struct VSInput {
 
 VsOutput vs_main(VSInput input) {
   VsOutput o;
+  o.position = inverse * input.position;
   o.position = pvw * o.position;
   return o;
 }
