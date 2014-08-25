@@ -142,7 +142,11 @@ void FrustrumSplit::clear() {
 }
 
 QuadTree::Splitable::SplitRes FrustrumSplit::Split(const QuadTree::Node& node) {
-  
+  if (node.level > 3) {
+    partial_pitches_.push_back(node.pitch);
+    return kSplit;
+  }
+
   const azer::Vector3& minpos = tile_->vertex(node.pitch.left, node.pitch.top);
   const azer::Vector3& maxpos = tile_->vertex(node.pitch.right,node.pitch.bottom);
 
