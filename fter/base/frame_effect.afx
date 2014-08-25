@@ -1,8 +1,8 @@
 technique [
-    name = "frustrum_frame_effect"
+    name = "frame_effect"
     ps_main="ps_main"
     vs_main="vs_main"
-    class_name="FrustrumFrameEffect"
+    class_name="FrameEffect"
            ];
 
 struct DirLight {

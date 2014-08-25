@@ -2,20 +2,19 @@
 
 #include "azer/render/render.h"
 
-#include "frustrum_frame_effect.afx.h"
+#include "frame_effect.afx.h"
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/base/"
-#define SHADER_NAME "frustrum_frame_effect.afx"
+#define SHADER_NAME "frame_effect.afx"
 
 void FrustrumFrame::Init(azer::RenderSystem* rs) {
-  azer::ShaderArray shaders;
+azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   
-  FrustrumFrameEffect* effect =
-      new FrustrumFrameEffect(shaders.GetShaderVec(), rs);
+  FrameEffect* effect = new FrameEffect(shaders.GetShaderVec(), rs);
   effect_.reset(effect);
 
-  FrustrumFrameEffect::Vertex vertices[] = {
+  FrameEffect::Vertex vertices[] = {
     azer::Vector4(-1.0f,  1.0f, 0.0f, 1.0f),
     azer::Vector4( 1.0f,  1.0f, 0.0f, 1.0f),
     azer::Vector4( 1.0f, -1.0f, 0.0f, 1.0f),
@@ -66,10 +65,10 @@ void FrustrumFrame::Update(const azer::Camera& camera) {
 }
 
 void FrustrumFrame::Render(const azer::Matrix4& pv, azer::Renderer* renderer) {
-  FrustrumFrameEffect* effect = (FrustrumFrameEffect*)effect_.get();
+  FrameEffect* effect = (FrameEffect*)effect_.get();
   effect->SetPVW(pv);
   effect->SetInverse(inverse_mat_);
-  effect->SetDiffuse(azer::Vector4(0.0f, 0.8f, 0.8f, 1.0f));
+  effect->SetDiffuse(azer::Vector4(1.0f, 1.0f, 0.0f, 1.0f));
   effect->Use(renderer);
   azer::CullingMode cm = renderer->GetCullingMode();
   renderer->SetCullingMode(azer::kCullNone);
