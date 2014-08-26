@@ -12,5 +12,6 @@ group("tersbox_fter") {
     "detailmap:tersbox_fter_detailmap",
     "lightmap:tersbox_fter_lightmap",
     "quadcull:tersbox_fter_quadcull",
+    "clod:tersbox_fter_clod",
   ]
 }

@@ -92,14 +92,12 @@ void Terrain::OnUpdateScene(double time, float delta_time) {
   for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
     cur = tile_.InitPitchIndices(0, *iter, cur);
   }
-  /*
-  indices_num_ = indices.size();
+  indices_num_ = cur - &(indices_[0]);
   if (indices_num_ > 0u) {
     azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
-    memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
+    memcpy(data->data_ptr(), &(indices_[0]), indices_num_ * sizeof(int32));
     ib_->unmap();
   }
-  */
 }
 
 

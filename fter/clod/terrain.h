@@ -7,18 +7,21 @@
 
 #include "clod.afx.h"
 
+
+using azer::util::Tile;
+
 class FrustrumSplit : public azer::util::QuadTree::Splitable {
  public:
-  FrustrumSplit(const azer::util::Tile* tile, const azer::Frustrum* frustrum)
+  FrustrumSplit(const Tile* tile, const azer::Frustrum* frustrum)
     : tile_(tile), frustrum_(frustrum) {}
   virtual SplitRes Split(const azer::util::QuadTree::Node& node) OVERRIDE;
   void clear();
  public:
-  std::vector<azer::util::Tile::Pitch> partial_pitches_;
-  std::vector<azer::util::Tile::Pitch> fully_pitches_;
-  std::vector<azer::util::Tile::Pitch> none_pitches_;
+  std::vector<Tile::Pitch> partial_pitches_;
+  std::vector<Tile::Pitch> fully_pitches_;
+  std::vector<Tile::Pitch> none_pitches_;
  private:
-  const azer::util::Tile* tile_;
+  const Tile* tile_;
   const azer::Frustrum* frustrum_;
   DISALLOW_COPY_AND_ASSIGN(FrustrumSplit);
 };
@@ -37,18 +40,20 @@ class Terrain {
   void OnUpdateScene(double time, float delta_time);
   void OnRenderScene(azer::Renderer* renderer);
 
-  const std::vector<azer::util::Tile::Pitch>& pitches() const { return pitches_;};
+  const std::vector<Tile::Pitch>& pitches() const { return pitches_;};
 
-  azer::util::Tile& tile() { return tile_;}
-  const azer::util::Tile& tile() const { return tile_;}
+  Tile& tile() { return tile_;}
+  const Tile& tile() const { return tile_;}
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
-  void RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
+  void RenderPitch(const std::vector<Tile::Pitch>& pitches,
                    const azer::Matrix4& pv, azer::Renderer* renderer);
+  void UpdateIndices(const azer::Camera& camera);
+  float dist(const Tile::Pitch& pitch, const azer::Camera& camera);
   CubeFrame cubeframe_;
 
-  std::vector<azer::util::Tile::Pitch> pitches_;
-  azer::util::Tile tile_;
+  std::vector<Tile::Pitch> pitches_;
+  Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
@@ -65,5 +70,5 @@ class Terrain {
   DISALLOW_COPY_AND_ASSIGN(Terrain);
 };
 
-void RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
+void RenderPitch(const std::vector<Tile::Pitch>& pitches,
                  const azer::Matrix4& pv, azer::Renderer* renderer);

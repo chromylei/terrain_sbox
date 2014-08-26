@@ -5,7 +5,7 @@
 #include "tersbox/fter/base/camera_control.h"
 #include "tersbox/fter/base/frustrum_frame.h"
 #include "tersbox/fter/base/cubeframe.h"
-#include "tersbox/fter/quadcull/terrain.h"
+#include "tersbox/fter/clod/terrain.h"
 
 #include <tchar.h>
 

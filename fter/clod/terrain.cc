@@ -1,7 +1,7 @@
-#include "tersbox/fter/quadcull/terrain.h"
+#include "tersbox/fter/clod/terrain.h"
 
 #include "clod.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/quadcull/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/clod/"
 #define SHADER_NAME "clod.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/fter/res/heightmap003.bmp")
 #define TEX_PATH FILE_PATH_LITERAL("tersbox/fter/res/tex/colorm001.bmp")
@@ -84,22 +84,42 @@ void Terrain::InitPhysicsBuffer(azer::RenderSystem* rs) {
   indices_.resize(indices_num_);
 }
 
+float Terrain::dist(const azer::util::Tile::Pitch& pitch,
+                    const azer::Camera& camera) {
+  const azer::Vector3& pos = tile_.vertex((pitch.right + pitch.left) * 0.5f,
+                                          (pitch.bottom + pitch.top) * 0.5f);
+  const azer::Vector3& cpos = camera.position();
+  const azer::Vector3 d = cpos - pos;
+  return d.length();
+}
+
+void Terrain::UpdateIndices(const azer::Camera& camera) {
+  int32* cur = &(indices_[0]);
+  for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
+    DCHECK_GE(iter->right - iter->left, 4);
+    float distance = dist(*iter, camera_);
+    if (distance > 100) {
+      cur = tile_.InitPitchIndices(2, *iter, cur);
+    } else if (distance > 50) {
+      cur = tile_.InitPitchIndices(1, *iter, cur);
+    } else {
+      cur = tile_.InitPitchIndices(0, *iter, cur);
+    }
+  }
+  indices_num_ = cur - &(indices_[0]);
+}
+
 void Terrain::OnUpdateScene(double time, float delta_time) {
   pitches_.clear();
   frustrum_split_.clear();
   quadtree_.Split(4, &frustrum_split_, &pitches_);
-  int32* cur = &(indices_[0]);
-  for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
-    cur = tile_.InitPitchIndices(0, *iter, cur);
-  }
-  /*
-  indices_num_ = indices.size();
+
+  UpdateIndices(camera_);
   if (indices_num_ > 0u) {
     azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
-    memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
+    memcpy(data->data_ptr(), &(indices_[0]), indices_num_ * sizeof(int32));
     ib_->unmap();
   }
-  */
 }
 
 
@@ -116,6 +136,7 @@ void Terrain::OnRenderScene(azer::Renderer* renderer) {
                         indices_num_, 0, 0);
   }
 
+  /*
   cubeframe_.SetDiffuse(azer::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
   RenderPitch(frustrum_split_.fully_pitches_, camera_.GetProjViewMatrix(), renderer);
   
@@ -124,6 +145,7 @@ void Terrain::OnRenderScene(azer::Renderer* renderer) {
 
   cubeframe_.SetDiffuse(azer::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
   RenderPitch(frustrum_split_.none_pitches_, camera_.GetProjViewMatrix(), renderer);
+  */
 }
 
 void Terrain::RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
@@ -145,7 +167,7 @@ void FrustrumSplit::clear() {
 }
 
 QuadTree::Splitable::SplitRes FrustrumSplit::Split(const QuadTree::Node& node) {
-  if (node.level > 3) {
+  if (node.level > 4) {
     partial_pitches_.push_back(node.pitch);
     return kSplit;
   }
@@ -161,16 +183,12 @@ QuadTree::Splitable::SplitRes FrustrumSplit::Split(const QuadTree::Node& node) {
     return kSplit;
   } else if (state == azer::kFullyVisible) {
     fully_pitches_.push_back(node.pitch);
-    return kKeep;
-  }
-
-  const azer::Vector3& pos = frustrum_->camera()->position();
-  if (pos.x >= minpos.x && pos.z >= minpos.z
-      && pos.x <= maxpos.x && pos.z <= maxpos.z) {
-    partial_pitches_.push_back(node.pitch);
-    return kSplit;
+    if (node.level > 2) {
+      return kSplit;
+    } else {
+      return kKeep;
+    }
   } else {
-    none_pitches_.push_back(node.pitch);
     return kDrop;
   }
 }
