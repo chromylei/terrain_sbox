@@ -81,22 +81,25 @@ void Terrain::InitPhysicsBuffer(azer::RenderSystem* rs) {
   ibopt.usage = azer::GraphicBuffer::kDynamic;
   ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
   indices_num_ = tile_.indices().size();
+  indices_.resize(indices_num_);
 }
 
 void Terrain::OnUpdateScene(double time, float delta_time) {
   pitches_.clear();
   frustrum_split_.clear();
   quadtree_.Split(4, &frustrum_split_, &pitches_);
-  std::vector<int32> indices;
+  int32* cur = &(indices_[0]);
   for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
-    tile_.InitPitchIndices(0, *iter, &indices);
+    cur = tile_.InitPitchIndices(0, *iter, cur);
   }
+  /*
   indices_num_ = indices.size();
   if (indices_num_ > 0u) {
     azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
     memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
     ib_->unmap();
   }
+  */
 }
 
 

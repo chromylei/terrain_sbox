@@ -61,6 +61,7 @@ class Terrain {
   const azer::Camera& camera_;
   const int kDetailMap;
   int32 indices_num_;
+  std::vector<int32> indices_;
   DISALLOW_COPY_AND_ASSIGN(Terrain);
 };
 

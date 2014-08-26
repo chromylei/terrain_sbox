@@ -52,10 +52,11 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   azer::Radians camera_speed(5.0f * azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 
-  if( ::GetAsyncKeyState('Z') & 0x8000f || time < 0.001) {
+  
+  // if( ::GetAsyncKeyState('Z') & 0x8000f || time < 0.001) {
     frame_.Update(camera_);
     terrain_.OnUpdateScene(time, delta_time);
-  }
+    // }
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
