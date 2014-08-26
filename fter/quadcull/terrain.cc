@@ -93,7 +93,7 @@ void Terrain::OnUpdateScene(double time, float delta_time) {
   }
   indices_num_ = indices.size();
   if (indices_num_ > 0u) {
-    azer::LockDataPtr data(ib_->map(azer::kWriteDiscard));
+    azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
     memcpy(data->data_ptr(), &(indices[0]), indices.size() * sizeof(int32));
     ib_->unmap();
   }
