@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tersbox/fter/base/camera_control.h"
+#include "tersbox/fter/clod/clod.h"
 
 #include <tchar.h>
 
@@ -65,12 +66,16 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   }
 
   azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32,
-                            azer::IndicesData::kMainMemory));
+      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32));
   memcpy(idata_ptr->pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
+
+  azer::IndicesBuffer::Options ibopt;
+  ibopt.cpu_access = azer::kCPUWrite;
+  ibopt.usage = azer::GraphicBuffer::kDynamic;
+  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
   camera_.SetPosition(azer::Vector3(0.0f, 3.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 3.0f, -5.0f));

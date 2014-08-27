@@ -39,8 +39,7 @@ azer::ShaderArray shaders;
     8, 9, 9, 10, 10, 11, 11, 8,
   };
   azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32,
-                            azer::IndicesData::kMainMemory));
+      new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32));
   memcpy(idata_ptr->pointer(), indices, sizeof(indices));
   int32 indices_plane[] = {
     4, 0, 1, 4, 3, 0,  // top plane
@@ -50,8 +49,7 @@ azer::ShaderArray shaders;
   };
 
   azer::IndicesDataPtr idata_ptr2(
-      new azer::IndicesData(arraysize(indices_plane), azer::IndicesData::kUint32,
-                            azer::IndicesData::kMainMemory));
+      new azer::IndicesData(arraysize(indices_plane), azer::IndicesData::kUint32));
   memcpy(idata_ptr2->pointer(), indices_plane, sizeof(indices_plane));
 
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));

@@ -117,8 +117,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   }
 
   azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32,
-                            azer::IndicesData::kMainMemory));
+      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32));
   memcpy(idata_ptr->pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 

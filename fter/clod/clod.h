@@ -5,13 +5,14 @@
 
 class Clod {
  public:
-  Clod() {}
+  Clod(azer::util::Tile* tile) : tile_(tile) {}
 
   /**
    * generate indices for pitch
    */
   int32* GenIndices(const std::vector<azer::util::Tile::Pitch>& pitch,
                     int32* indices);
+  int32* GenIndices(int32* indices);
  private:
   azer::util::Tile* tile_;
   DISALLOW_COPY_AND_ASSIGN(Clod);
@@ -36,4 +37,4 @@ enum PitchFanSplit {
   kSplitAll    = 0x0000000F,
 };
 int32* InitPitchFan(const azer::util::Tile::Pitch& pitch, int kGridLine,
-                      int32* indices, uint32 flags = kSplitAll);
+                    int32* indices, uint32 flags = kSplitAll);

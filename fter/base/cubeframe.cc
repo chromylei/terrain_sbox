@@ -34,8 +34,7 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
     0, 4, 1, 5, 2, 6, 3, 7,
   };
   azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32,
-                            azer::IndicesData::kMainMemory));
+    new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32));
   memcpy(idata_ptr->pointer(), indices, sizeof(indices));
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
