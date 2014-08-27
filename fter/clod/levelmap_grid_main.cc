@@ -100,7 +100,6 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   ibopt.cpu_access = azer::kCPUWrite;
   ibopt.usage = azer::GraphicBuffer::kDynamic;
   ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
   camera_.SetPosition(azer::Vector3(0.0f, 10.0f, -15.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 }

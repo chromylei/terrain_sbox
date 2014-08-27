@@ -51,7 +51,7 @@ void MainDelegate::Init() {
   renderer->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
   CHECK(renderer->GetFrontFace() == azer::kCounterClockwise);
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
-  renderer->SetFillMode(azer::kWireFrame);
+  // renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
   tile_.Init();
 
@@ -63,7 +63,7 @@ void MainDelegate::Init() {
   heightmap_ = azer::util::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 
-  light_.dir = azer::Vector4(0.0f, -0.8f, 0.4f, 1.0f);
+  light_.dir = azer::Vector4(0.0f, -0.6f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
 }
@@ -72,21 +72,23 @@ void MainDelegate::Init() {
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
       new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
-  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
-  DirlightEffect::Vertex* v = vertex;
-  for (int i = 0; i < tile_.GetVertexNum(); ++i) {
-    const azer::Vector3& pos = tile_.vertices()[i];
-    int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_->width();
-    int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_->width();
-    uint32 rgba = heightmap_->pixel(tx, ty);
-    float height = (rgba & 0x0000FF00) >> 8;
-    v->position = azer::Vector4(pos.x, height * 0.1, pos.z, 1.0f);
-    v++;
+  int cnt = 0;
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
+      const azer::Vector3& pos = tile_.vertices()[cnt];
+      int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_->width();
+      int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_->width();
+      uint32 rgba = heightmap_->pixel(tx, ty);
+      float height = (rgba & 0x0000FF00) >> 8;
+      tile_.SetHeight(i, j, height * 0.1f);
+      cnt++;
+    }
   }
-
+  CHECK_EQ(cnt, tile_.GetVertexNum());
   // calc normal
   tile_.CalcNormal();
-  v = (DirlightEffect::Vertex*)vdata->pointer();
+  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
+  DirlightEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     v->position = tile_.vertices()[i];
     v->normal = tile_.normal()[i];
@@ -121,7 +123,6 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   ibopt.cpu_access = azer::kCPUWrite;
   ibopt.usage = azer::GraphicBuffer::kDynamic;
   ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
   camera_.SetPosition(azer::Vector3(0.0f, 10.0f, -15.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 }
