@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_clod_grid_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+executable("tersbox_clod_grid") {
+  sources = ["main.cc", "clod.cc"]
+  deps = ["//azer/render:render",
+          "//azer/util:azer_util",
+          "//base:appinit",
+          "//tersbox/fter/base:tersbox_fter_base",
+          ":tersbox_clod_grid_effect",
+         ]
+}
