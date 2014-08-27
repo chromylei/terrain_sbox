@@ -1,5 +1,7 @@
 
 group("tersbox_clod") {
-  deps = ["grid:tersbox_clod_grid",
+  deps = [
+    "grid:tersbox_clod_grid",
+    "irregular:tersbox_clod_irregular",
   ]
 }
