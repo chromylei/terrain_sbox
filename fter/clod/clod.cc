@@ -4,16 +4,15 @@
 
 using azer::util::Tile;
 
-int32* Clod::GenIndices(const std::vector<azer::util::Tile::Pitch>& pitch,
-                        int32* indices) {
+int32* Clod::GenIndices(std::vector<azer::util::Tile::Pitch>* pitch, int32* indices) {
   return indices;
 }
 
 int32* Clod::GenIndices(int32* indices) {
   azer::util::Tile::Pitch pitch;
   int32* cur = indices;
-  for (int i = 0; i < tile_->GetGridLineNum(); i += 4) {
-    for (int j = 0; j < tile_->GetGridLineNum(); j += 4) {
+  for (int i = 0; i + 4< tile_->GetGridLineNum(); i += 4) {
+    for (int j = 0; j + 4 < tile_->GetGridLineNum(); j += 4) {
       pitch.top = i;
       pitch.bottom = i + 4;
       pitch.left = j;
@@ -37,61 +36,61 @@ int32* InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
 
   // top
   if (flags & 0x00000001) {
-    *cur++ = midline + step;
-    *cur++ = topline + step;
+    *cur++ = midline + step + pitch.left;
+    *cur++ = topline + step + pitch.left;
     *cur++ = topline + pitch.left;
 
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.right;
-    *cur++ = topline + step;
+    *cur++ = topline + step + pitch.left;
     
   } else {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.right;
     *cur++ = topline + pitch.left;
   }
 
   // bottom
   if (flags & 0x00000002) {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = bottomline + pitch.left;
-    *cur++ = bottomline + step;
+    *cur++ = bottomline + step + pitch.left;
 
-    *cur++ = midline + step;
-    *cur++ = bottomline + step;
+    *cur++ = midline + step + pitch.left;
+    *cur++ = bottomline + step + pitch.left;
     *cur++ = bottomline + pitch.right;
   } else {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = bottomline + pitch.left;
     *cur++ = bottomline + pitch.right;
   }
 
   // left
   if (flags & 0x00000004) {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.left;
     *cur++ = midline + pitch.left;
 
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = midline + pitch.left;
     *cur++ = bottomline + pitch.left;
   } else {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.left;
     *cur++ = bottomline + pitch.left;
   }
 
   // left
   if (flags & 0x00000008) {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = midline + pitch.right;
     *cur++ = topline + pitch.right;
 
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = bottomline + pitch.right;
     *cur++ = midline + pitch.right;
   } else {
-    *cur++ = midline + step;
+    *cur++ = midline + step + pitch.left;
     *cur++ = bottomline + pitch.right;
     *cur++ = topline + pitch.right;
   }

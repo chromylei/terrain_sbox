@@ -10,8 +10,7 @@ class Clod {
   /**
    * generate indices for pitch
    */
-  int32* GenIndices(const std::vector<azer::util::Tile::Pitch>& pitch,
-                    int32* indices);
+  int32* GenIndices(std::vector<azer::util::Tile::Pitch>* pitch, int32* indices);
   int32* GenIndices(int32* indices);
  private:
   azer::util::Tile* tile_;
