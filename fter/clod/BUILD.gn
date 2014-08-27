@@ -10,6 +10,11 @@ afx("tersbox_fter_clodgrid_effect") {
   filename = "diffuse"
 }
 
+afx("tersbox_fter_clod_dirlight_effect") {
+  source = "dirlight.afx"
+  filename = "dirlight"
+}
+
 static_library("tersbox_fter_clodlib") {
   sources = [
     "terrain.cc",
@@ -45,6 +50,20 @@ executable("tersbox_fter_clod_levelmapgrid") {
           ":tersbox_fter_clodlib",
           ":tersbox_fter_clod_effect",
           ":tersbox_fter_clodgrid_effect",
+          ":tersbox_fter_clod_dirlight_effect",
+         ]
+}
+
+executable("tersbox_fter_clod_levelmapgrid2") {
+  sources = ["levelmap_grid_main2.cc"]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//azer/util:azer_util",
+          "//base:appinit",
+          ":tersbox_fter_clodlib",
+          ":tersbox_fter_clod_effect",
+          ":tersbox_fter_clodgrid_effect",
+          ":tersbox_fter_clod_dirlight_effect",
          ]
 }
 

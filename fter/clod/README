@@ -1,2 +1,6 @@
 
 根据 viewpoint 做 clod， viewpoint 并不固定，此程序的主要目的在于简化 CLOD 的实现，将精力集中在分割上
+
+gridmain: 按照 clod 生成 indices 的 grid 
+levelmapgrid: 多级别的分割并避免了龟裂的情
+levelmapgrid2: 加载高度图

@@ -11,6 +11,7 @@
 
 #include "diffuse.afx.h"
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/clod/"
+#define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/fter/res/heightmap001.bmp")
 #define SHADER_NAME "diffuse.afx"
 using base::FilePath;
 
@@ -39,6 +40,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   Clod clod_;
   std::unique_ptr<int32[]> levels_;
   int32 indices_num_;
+  azer::ImagePtr heightmap_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -57,6 +59,7 @@ void MainDelegate::Init() {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
 
+  heightmap_ = azer::util::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 }
 
@@ -68,7 +71,11 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
-    v->position = azer::Vector4(pos.x, 0.0f, pos.z, 1.0f);
+    int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_->width();
+    int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_->width();
+    uint32 rgba = heightmap_->pixel(tx, ty);
+    float height = (rgba & 0x0000FF00) >> 8;
+    v->position = azer::Vector4(pos.x, height * 0.1, pos.z, 1.0f);
     v++;
   }
 
