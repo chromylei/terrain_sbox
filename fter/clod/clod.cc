@@ -4,11 +4,8 @@
 
 using azer::util::Tile;
 
-int32* Clod::GenIndices(std::vector<azer::util::Tile::Pitch>* pitch, int32* indices) {
-  return indices;
-}
 
-int32* Clod::GenIndices(int32* indices) {
+int32* Clod::GenIndices(int32* indices, uint32 flags) {
   azer::util::Tile::Pitch pitch;
   int32* cur = indices;
   for (int i = 0; i + 4< tile_->GetGridLineNum(); i += 4) {
@@ -17,15 +14,20 @@ int32* Clod::GenIndices(int32* indices) {
       pitch.bottom = i + 4;
       pitch.left = j;
       pitch.right = j + 4;
-      cur = InitPitchFan(pitch, tile_->GetGridLineNum(), cur);
+      cur = GenIndices(pitch, cur, flags);
     }
   }
 
   return cur;
 }
 
-int32* InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
-                    int32* indices, uint32 flags) {
+int32* Clod::GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
+                        uint32 flags) {
+  return InitPitchFan(pitch, tile_->GetGridLineNum(), indices, flags);
+}
+
+int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
+                          int32* indices, uint32 flags) {
   DCHECK_EQ(pitch.right - pitch.left, pitch.bottom - pitch.top);
   const int step = (pitch.right - pitch.left) / 2;
 
