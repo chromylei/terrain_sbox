@@ -52,7 +52,7 @@ class Clod {
  private:
   azer::util::Tile* tile_;
   std::unique_ptr<int32> levels_;
-  disallow_COPY_AND_ASSIGN(Clod);
+  DISALLOW_COPY_AND_ASSIGN(Clod);
 };
 
 
