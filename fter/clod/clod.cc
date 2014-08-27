@@ -41,6 +41,23 @@ int32* Clod::GenIndices(const azer::util::Tile::Pitch& pitch,
         p.right = j + step;
 
         uint32 flags = (level % 2 == 0) ? kSplitAll : 0;
+        if (flags == kSplitAll) {
+          if (level < left_level(j, i, step, levels)) {
+            flags &= ~kSplitLeft;
+          }
+
+          if (level < right_level(j, i, step, levels)) {
+            flags &= ~kSplitRight;
+          }
+
+          if (level < top_level(j, i, step, levels)) {
+            flags &= ~kSplitTop;
+          }
+
+          if (level < bottom_level(j, i, step, levels)) {
+            flags &= ~kSplitBottom;
+          }
+        }
         cur = InitPitchFan(p, tile_->GetGridLineNum(), cur, flags);
       }
     }

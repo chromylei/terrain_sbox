@@ -51,10 +51,34 @@ class Clod {
   int32* GenIndices(const azer::util::Tile::Pitch& pitch,
                     int32* indices, int32* splitlevel);
   void CalcLOD();
+  int level(int x, int y, int32* level);
  private:
+  int left_level(int x, int y, int step, int32* level);
+  int right_level(int x, int y, int step, int32* level);
+  int top_level(int x, int y, int step, int32* level);
+  int bottom_level(int x, int y, int step, int32* level);
   azer::util::Tile* tile_;
   std::unique_ptr<int32> levels_;
   DISALLOW_COPY_AND_ASSIGN(Clod);
 };
 
 
+inline int Clod::left_level(int x, int y, int step, int32* level) {
+  int newx = (x < step ? 0 : x - step);
+  return level[y * tile_->GetGridLineNum() + newx];
+}
+
+inline int Clod::right_level(int x, int y, int step, int32* level) {
+  int newx = ((x < tile_->GetGridLineNum() - step) ? x + step : x);
+  return level[y * tile_->GetGridLineNum() + newx];
+}
+
+inline int Clod::top_level(int x, int y, int step, int32* level) {
+  int newy = (y < step ? 0 : y - step);
+  return level[newy * tile_->GetGridLineNum() + x];
+}
+
+inline int Clod::bottom_level(int x, int y, int step, int32* level) {
+  int newy = (y < tile_->GetGridLineNum() + step ? y + step : y);
+  return level[newy * tile_->GetGridLineNum() + x];
+}
