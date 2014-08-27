@@ -36,7 +36,23 @@ class Clod {
   int32* GenIndices(int32* indices, uint32 flags = kSplitAll);
   int32* GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
                     uint32 flags = kSplitAll);
+
+  /**
+   * 根据给定的分割级别进行分割
+   * 注意在分割的时候必须保证分割方式能够切好填满整个 tile, 不能出现分割半个的情况
+   * 例如 在边缘处的 level == 2
+   * 生成 splitlevel 的算法其实很简单就是
+   *  level = 0 必须以 4 * 4 的方式出现
+   *  level = 1 必须以 2 * 2 的方式出现
+   *  level = 2 则无所谓
+   */
+  int32* GenIndices(int32* indices, int32* splitlevel);
+
+  void CalcLOD();
  private:
   azer::util::Tile* tile_;
-  DISALLOW_COPY_AND_ASSIGN(Clod);
+  std::unique_ptr<int32> levels_;
+  disallow_COPY_AND_ASSIGN(Clod);
 };
+
+

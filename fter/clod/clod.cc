@@ -26,6 +26,28 @@ int32* Clod::GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
   return InitPitchFan(pitch, tile_->GetGridLineNum(), indices, flags);
 }
 
+int32* Clod::GenIndices(int32* indices, int32* splitlevel) {
+  int step = 1;
+  int32* cur = indices;
+  while (i + step < tile_->GetGridLineNum()) {
+    while (j + step < tile_->GetGridLineNum()) {
+      int level = level[i * tile_->GetGridLineNum() + j];
+      step = std::pow(2.0f, level);
+      
+      pitch.top = i;
+      pitch.bottom = i + step;
+      pitch.left = j;
+      pitch.right = j + step;
+      cur = GenIndices(pitch, cur, flags);
+
+      j += step;
+    }
+    i += step;
+  }
+
+  return cur;
+}
+
 int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
                           int32* indices, uint32 flags) {
   DCHECK_EQ(pitch.right - pitch.left, pitch.bottom - pitch.top);
@@ -98,4 +120,7 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
   }
 
   return cur;
+}
+
+void CLod::CalcLOD() {
 }

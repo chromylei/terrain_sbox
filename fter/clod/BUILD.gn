@@ -36,8 +36,8 @@ executable("tersbox_fter_clodgrid") {
          ]
 }
 
-executable("tersbox_fter_clod_bitmapgrid") {
-  sources = ["bitmap_grid_main.cc"]
+executable("tersbox_fter_clod_levelmapgrid") {
+  sources = ["levelmap_grid_main.cc"]
   deps = ["//tersbox/fter/base:tersbox_fter_base",
           "//azer/render:render",
           "//azer/util:azer_util",
