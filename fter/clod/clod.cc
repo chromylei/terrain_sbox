@@ -26,26 +26,36 @@ int32* Clod::GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
   return InitPitchFan(pitch, tile_->GetGridLineNum(), indices, flags);
 }
 
-int32* Clod::GenIndices(int32* indices, int32* levels) {
+int32* Clod::GenIndices(const azer::util::Tile::Pitch& pitch,
+                        int32* indices, int32* levels) {
   int32* cur = indices;
-  for (int i = 0; i < tile_->GetGridLineNum(); i++) {
-    for (int j = 0; j < tile_->GetGridLineNum(); j++) {
+  for (int i = pitch.top; i < pitch.bottom - 1; ++i) {
+    for (int j = pitch.left; j < pitch.right - 1; ++j) {
       int level = levels[i * tile_->GetGridLineNum() + j];
-      int step = std::pow(2.0f, level);
-      if (i % step != 0 && j % step != 0) {
-        continue;
-      }
+      int step = std::pow(2.0f, 1 + level / 2);
+      if (i % step == 0 && j % step == 0) {
+        azer::util::Tile::Pitch p;
+        p.top = i;
+        p.bottom = i + step;
+        p.left = j;
+        p.right = j + step;
 
-      azer::util::Tile::Pitch pitch;
-      pitch.top = i;
-      pitch.bottom = i + step;
-      pitch.left = j;
-      pitch.right = j + step;
-      cur = GenIndices(pitch, cur, kSplitAll);
+        uint32 flags = (level % 2 == 0) ? kSplitAll : 0;
+        cur = InitPitchFan(p, tile_->GetGridLineNum(), cur, flags);
+      }
     }
   }
 
   return cur;
+}
+
+int32* Clod::GenIndices(int32* indices, int32* levels) {
+  azer::util::Tile::Pitch pitch;
+  pitch.top = 0;
+  pitch.left = 0;
+  pitch.bottom = tile_->GetGridLineNum();
+  pitch.right = tile_->GetGridLineNum();
+  return GenIndices(pitch, indices, levels);
 }
 
 int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
@@ -61,7 +71,7 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
   int32* cur = indices;
 
   // top
-  if (flags & 0x00000001) {
+  if (flags & kSplitTop) {
     *cur++ = midline + step + pitch.left;
     *cur++ = topline + step + pitch.left;
     *cur++ = topline + pitch.left;
@@ -69,7 +79,6 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
     *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.right;
     *cur++ = topline + step + pitch.left;
-    
   } else {
     *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.right;
@@ -77,7 +86,7 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
   }
 
   // bottom
-  if (flags & 0x00000002) {
+  if (flags & kSplitBottom) {
     *cur++ = midline + step + pitch.left;
     *cur++ = bottomline + pitch.left;
     *cur++ = bottomline + step + pitch.left;
@@ -92,7 +101,7 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
   }
 
   // left
-  if (flags & 0x00000004) {
+  if (flags & kSplitLeft) {
     *cur++ = midline + step + pitch.left;
     *cur++ = topline + pitch.left;
     *cur++ = midline + pitch.left;
@@ -107,7 +116,7 @@ int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
   }
 
   // left
-  if (flags & 0x00000008) {
+  if (flags & kSplitRight) {
     *cur++ = midline + step + pitch.left;
     *cur++ = midline + pitch.right;
     *cur++ = topline + pitch.right;

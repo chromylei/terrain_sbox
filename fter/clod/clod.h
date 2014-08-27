@@ -23,6 +23,7 @@ class Clod {
     kSplitBottom = 0x00000002,
     kSplitLeft   = 0x00000004,
     kSplitRight  = 0x00000008,
+    kSplitOne    = 0x00000010,
     kSplitAll    = 0x0000000F,
   };
   static int32* InitPitchFan(const azer::util::Tile::Pitch& pitch, int kGridLine,
@@ -47,7 +48,8 @@ class Clod {
    *  level = 2 ‘ÚŒﬁÀ˘ŒΩ
    */
   int32* GenIndices(int32* indices, int32* splitlevel);
-
+  int32* GenIndices(const azer::util::Tile::Pitch& pitch,
+                    int32* indices, int32* splitlevel);
   void CalcLOD();
  private:
   azer::util::Tile* tile_;

@@ -17,7 +17,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(4)
+      : tile_(6)
       , clod_(&tile_) {
     int size = tile_.GetGridLineNum() * tile_.GetGridLineNum();
     levels_.reset(new int32[size]);
@@ -71,16 +71,19 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
     v++;
   }
 
-  int level0 = tile_.GetGridLineNum() / 4;
-  int level1 = tile_.GetGridLineNum() / 2;
+  int level0 = tile_.GetGridLineNum() / 8;
+  int level1 = tile_.GetGridLineNum() / 4;
+  int level2 = tile_.GetGridLineNum() / 2;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       if (i < level0 && j < level0) {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 0;
       } else if (i < level1 && j < level1) {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 1;
-      } else {
+      } else if (i < level2 && j < level2) {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 2;
+      } else {
+        (levels_.get())[i * tile_.GetGridLineNum() + j] = 3;
       }
     }
   }
