@@ -19,6 +19,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   MainDelegate()
       : tile_(8)
       , clod_(&tile_) {
+    int size = tile_.GetGridLineNum() * tile_.GetGridLineNum();
+    levels_.reset(new int32[size]);
+    memset(levels_.get(), 0, size);
   }
   virtual void OnCreate() {}
 
@@ -34,6 +37,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::IndicesBufferPtr ib_;
   std::unique_ptr<DiffuseEffect> effect_;
   Clod clod_;
+  std::unique_ptr<int32[]> levels_;
+  int32 indices_num_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -66,10 +71,24 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
     v++;
   }
 
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
+      if (i < 32 && j < 32) {
+        (levels_.get())[i * tile_.GetGridLineNum() + j] = 0;
+      } else if (i < 128 && j < 128) {
+        (levels_.get())[i * tile_.GetGridLineNum() + j] = 1;
+      } else {
+        (levels_.get())[i * tile_.GetGridLineNum() + j] = 2;
+      }
+    }
+  }
+
   azer::IndicesDataPtr idata_ptr(
       new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32));
-  int32* end = clod_.GenIndices((int32*)idata_ptr->pointer());
+  int32* begin = (int32*)idata_ptr->pointer();
+  int32* end = clod_.GenIndices(begin, levels_.get());
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
+  indices_num_ = end - begin;
 
   azer::IndicesBuffer::Options ibopt;
   ibopt.cpu_access = azer::kCPUWrite;
@@ -98,7 +117,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->Use(renderer);
-  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList, indices_num_);
 }
 
 int main(int argc, char* argv[]) {
