@@ -7,7 +7,6 @@
 
 #include "clod.afx.h"
 
-
 using azer::util::Tile;
 
 class FrustrumSplit : public azer::util::QuadTree::Splitable {

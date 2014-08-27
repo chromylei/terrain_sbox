@@ -5,13 +5,44 @@ afx("tersbox_fter_clod_effect") {
   filename = "clod"
 }
 
+afx("tersbox_fter_clodgrid_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
 
-executable("tersbox_fter_clod") {
-  sources = ["main.cc", "terrain.cc",]
+static_library("tersbox_fter_clodlib") {
+  sources = [
+    "terrain.cc",
+    "terrain.h",
+    "clod.cc",
+    "clod.h",
+  ]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//azer/util:azer_util",
+          ":tersbox_fter_clod_effect",
+         ]
+}
+
+executable("tersbox_fter_clodgrid") {
+  sources = ["grid_main.cc"]
   deps = ["//tersbox/fter/base:tersbox_fter_base",
           "//azer/render:render",
           "//azer/util:azer_util",
           "//base:appinit",
+          ":tersbox_fter_clodlib",
+          ":tersbox_fter_clod_effect",
+          ":tersbox_fter_clodgrid_effect",
+         ]
+}
+
+executable("tersbox_fter_clod") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/fter/base:tersbox_fter_base",
+          "//azer/render:render",
+          "//azer/util:azer_util",
+          "//base:appinit",
+          ":tersbox_fter_clodlib",
           ":tersbox_fter_clod_effect",
          ]
 }

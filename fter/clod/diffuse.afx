@@ -1,0 +1,30 @@
+technique [
+    name = "diffuse"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="DiffuseEffect"
+           ];
+
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+};
+
+exchange struct VSInput {
+  vec4 position;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * input.position;
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  return vec4(0.4, 0.4, 0.4, 1.0);
+}
+
