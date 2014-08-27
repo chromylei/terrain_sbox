@@ -17,7 +17,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(8)
+      : tile_(4)
       , clod_(&tile_) {
     int size = tile_.GetGridLineNum() * tile_.GetGridLineNum();
     levels_.reset(new int32[size]);
@@ -71,11 +71,13 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
     v++;
   }
 
+  int level0 = tile_.GetGridLineNum() / 4;
+  int level1 = tile_.GetGridLineNum() / 2;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
-      if (i < 32 && j < 32) {
+      if (i < level0 && j < level0) {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 0;
-      } else if (i < 128 && j < 128) {
+      } else if (i < level1 && j < level1) {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 1;
       } else {
         (levels_.get())[i * tile_.GetGridLineNum() + j] = 2;
@@ -95,13 +97,13 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   ibopt.usage = azer::GraphicBuffer::kDynamic;
   ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr));
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
-  camera_.SetPosition(azer::Vector3(0.0f, 80.0f, -120.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 10.0f, -15.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 }
 
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
-  float rspeed = 3.14f * 2.0f / 4.0f;
+  float rspeed = 3.14f * 2.0f;
   azer::Radians camera_speed(azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 }

@@ -27,14 +27,14 @@ int32* Clod::GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
 }
 
 int32* Clod::GenIndices(int32* indices, int32* levels) {
-  int step = 1;
   int32* cur = indices;
-  int i = 0;
-  while (i + step < tile_->GetGridLineNum()) {
-    int j = 0;
-    while (j + step < tile_->GetGridLineNum()) {
+  for (int i = 0; i < tile_->GetGridLineNum(); i++) {
+    for (int j = 0; j < tile_->GetGridLineNum(); j++) {
       int level = levels[i * tile_->GetGridLineNum() + j];
-      step = std::pow(2.0f, level);
+      int step = std::pow(2.0f, level);
+      if (i % step != 0 && j % step != 0) {
+        continue;
+      }
 
       azer::util::Tile::Pitch pitch;
       pitch.top = i;
@@ -42,10 +42,7 @@ int32* Clod::GenIndices(int32* indices, int32* levels) {
       pitch.left = j;
       pitch.right = j + step;
       cur = GenIndices(pitch, cur, kSplitAll);
-
-      j += step;
     }
-    i += step;
   }
 
   return cur;
@@ -53,7 +50,9 @@ int32* Clod::GenIndices(int32* indices, int32* levels) {
 
 int32* Clod::InitPitchFan(const Tile::Pitch& pitch, int kGridLine,
                           int32* indices, uint32 flags) {
-  DCHECK_EQ(pitch.right - pitch.left, pitch.bottom - pitch.top);
+  DCHECK_EQ(pitch.right - pitch.left, pitch.bottom - pitch.top)
+      << "width: " << pitch.right - pitch.left << " != "
+      << "height: " << pitch.bottom - pitch.top;
   const int step = (pitch.right - pitch.left) / 2;
 
   int topline = pitch.top * kGridLine;
