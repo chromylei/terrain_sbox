@@ -4,3 +4,4 @@
 gridmain: 按照 clod 生成 indices 的 grid 
 levelmapgrid: 多级别的分割并避免了龟裂的情
 levelmapgrid2: 加载高度图
+levelmapgrid3: 带有高度图及光照运算的渲染
