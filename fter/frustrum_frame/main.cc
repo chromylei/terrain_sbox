@@ -4,8 +4,8 @@
 #include "base/base.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "tersbox/fter/base/camera_control.h"
-#include "tersbox/fter/base/frustrum_frame.h"
+#include "tersbox/base/camera_control.h"
+#include "tersbox/base/frustrum_frame.h"
 
 #include <tchar.h>
 

@@ -1,0 +1,37 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_base_frame_effect") {
+  source = "frame_effect.afx"
+  filename = "frame_effect"
+}
+
+afx("tersbox_base_frustrum_frame_effect") {
+  source = "frustrum_frame_effect.afx"
+  filename = "frustrum_frame_effect"
+}
+
+static_library("tersbox_base_frustrum") {
+  sources = [
+    "frustrum_frame.cc",
+    "cubeframe.cc",
+    "cubeframe.h",
+  ]
+  deps = ["//azer/render:render",
+          "//azer/render_system/d3d11:d3d11_render_system",
+          ":tersbox_base_frame_effect",
+          ":tersbox_base_frustrum_frame_effect",
+          ]
+}
+
+static_library("tersbox_base") {
+  sources = [
+    "camera_control.cc",
+    "camera_control.h",
+  ]
+  deps = ["//azer/render:render",
+          "//azer/util:azer_util",
+          "//base:appinit",
+          "//azer/render_system/d3d11:d3d11_render_system",
+          ":tersbox_base_frustrum",
+         ]
+}

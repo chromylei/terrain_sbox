@@ -1,4 +1,4 @@
-#include "tersbox/fter/base/frustrum_frame.h"
+#include "tersbox/base/frustrum_frame.h"
 
 #include "azer/render/render.h"
 

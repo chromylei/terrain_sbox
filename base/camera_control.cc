@@ -1,4 +1,4 @@
-#include "tersbox/fter/base/camera_control.h"
+#include "tersbox/base/camera_control.h"
 
 void UpdatedownCamera(azer::Camera* camera, azer::Radians speed,
                       float delta_time) {

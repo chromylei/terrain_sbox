@@ -1,39 +1,15 @@
 import("//build/templates/afx.gni")
 
-afx("tersbox_fter_frame_effect") {
-  source = "frame_effect.afx"
-  filename = "frame_effect"
-}
-
-afx("tersbox_fter_frustrum_frame_effect") {
-  source = "frustrum_frame_effect.afx"
-  filename = "frustrum_frame_effect"
-}
-
-static_library("tersbox_fter_frustrum") {
-  sources = [
-    "frustrum_frame.cc",
-    "cubeframe.cc",
-    "cubeframe.h",
-  ]
-  deps = ["//azer/render:render",
-          "//azer/render_system/d3d11:d3d11_render_system",
-          ":tersbox_fter_frame_effect",
-          ":tersbox_fter_frustrum_frame_effect",
-          ]
-}
 
 static_library("tersbox_fter_base") {
   sources = [
     "terrain_data.cc",
     "terrain_data.h",
-    "camera_control.cc",
-    "camera_control.h",
   ]
   deps = ["//azer/render:render",
           "//azer/util:azer_util",
           "//base:appinit",
           "//azer/render_system/d3d11:d3d11_render_system",
-          ":tersbox_fter_frustrum",
+          "//tersbox/base:tersbox_base",
          ]
 }

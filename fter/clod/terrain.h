@@ -3,7 +3,7 @@
 #include "azer/util/util.h"
 #include "azer/render/render.h"
 #include "base/basictypes.h"
-#include "tersbox/fter/base/cubeframe.h"
+#include "tersbox/base/cubeframe.h"
 
 #include "clod.afx.h"
 

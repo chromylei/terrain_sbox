@@ -1,4 +1,4 @@
-#include "tersbox/fter/base/cubeframe.h"
+#include "tersbox/base/cubeframe.h"
 
 #include "azer/render/render.h"
 #include "frame_effect.afx.h"
