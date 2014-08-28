@@ -4,12 +4,12 @@
 #include "base/base.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "tersbox/fter/base/camera_control.h"
+#include "tersbox/base/camera_control.h"
 
 #include <tchar.h>
 
 #include "diffuse.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/fter/grid/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/grid/"
 #define SHADER_NAME "diffuse.afx"
 const char* kHeightmapPath = "sbox/terrain/res/heightmap01.bmp";
 using base::FilePath;

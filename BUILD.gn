@@ -3,5 +3,6 @@ group("tersbox") {
   deps = [
     "fter:tersbox_fter",
     "clod:tersbox_clod",
+    "roam:tersbox_roam",
   ]
 }
