@@ -29,6 +29,10 @@ class ROAMPitch {
   };
 
   void tessellate();
+
+  bool has_left_neighbor(BiTriTreeNode* node) { return node->left_neighbor != 0;}
+  bool has_right_neighbor(BiTriTreeNode* node) { return node->right_neighbor != 0;}
+  bool has_base_neighbor(BiTriTreeNode* node) { return node->base_neighbor != 0;}
  private:
   void reset();
 
@@ -39,7 +43,12 @@ class ROAMPitch {
    */
   int32* indices(int node_index, int leftx, int lefty, int rightx, int righty,
                  int apexx, int apexy, int32* indices);
-  void split();
+
+  /**
+   * 递归的分割节点
+   */
+  void RecursSplit(int nodeindex, int leftx, int lefty,
+                   int rightx, int righty, int apexx, int apexy);
   bool has_child(int index) const;
   
   std::unique_ptr<BiTriTreeNode[]> nodes_;
