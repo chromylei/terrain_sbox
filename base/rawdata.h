@@ -12,7 +12,8 @@ class RawHeightmap {
 
   bool Load();
 
-  uint8 height(int x, int y);
+  uint8 height(int x, int y) const;
+  int width() const { return kSize;}
  private:
   const int kSize;
   const ::base::FilePath path_;
@@ -20,6 +21,6 @@ class RawHeightmap {
   DISALLOW_COPY_AND_ASSIGN(RawHeightmap);
 };
 
-inline uint8 RawHeightmap::height(int x, int y) {
+inline uint8 RawHeightmap::height(int x, int y) const {
   return data_.get()[(y + 1) * kSize + x];
 }

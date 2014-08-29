@@ -46,8 +46,8 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 10.0f, -15.0f));
-  camera_.SetLookAt(azer::Vector3(0.0f, 10.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 30.0f, -15.0f));
+  camera_.SetLookAt(azer::Vector3(0.0f, 30.0f, 0.0f));
   tile_.Init();
 
   azer::ShaderArray shaders;
@@ -66,7 +66,10 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
-    v->position = azer::Vector4(pos.x, 0, pos.z, 1.0f);
+    int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_.width();
+    int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_.width();
+    float height = heightmap_.height(tx, ty);
+    v->position = azer::Vector4(pos.x, height * 0.1, pos.z, 1.0f);
     v++;
   }
 
