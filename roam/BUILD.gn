@@ -3,5 +3,6 @@ group("tersbox_roam") {
   deps = [
     "grid:tersbox_roam_grid",
     "heightmap:tersbox_roam_heightmap",
+    "indices:tersbox_roam_indices",
   ]
 }
