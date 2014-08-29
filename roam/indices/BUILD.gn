@@ -7,7 +7,7 @@ afx("tersbox_roam_indices_effect") {
 
 
 executable("tersbox_roam_indices") {
-  sources = ["main.cc"]
+  sources = ["main.cc", "roam.cc", "roam.h"]
   deps = ["//tersbox/base:tersbox_base",
           "//azer/render:render",
           "//base:appinit",
