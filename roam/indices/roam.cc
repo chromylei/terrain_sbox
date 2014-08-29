@@ -1,19 +1,10 @@
 #include "tersbox/roam/indices/roam.h"
 
-ROAMTree::ROAMTree(azer::Tile* tile, azer::Tile::Pitch& pitch)
+ROAMTree::ROAMTree(azer::Tile* tile, const Triangle& tri)
     : tile_(tile)
-    , pitch_(pitch)
+    , tri_(tri)
     , node_num_(0)
-    , kMaxNodeNum(std::pow(2.0f, tile_->level() + 1)) {
-  nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
-}
-
-ROAMTree::ROAMTree(azer::Tile* tile)
-    : tile_(tile)
-    , pitch_(azer::Tile::Pitch(0, 0, tile->GetGridLineNum() - 1,
-                               tile->GetGridLineNum() - 1))
-    , node_num_(0)
-    , kMaxNodeNum(std::pow(2.0f, tile_->level() + 1)) {
+    , kMaxNodeNum(std::pow(2.0f, tile_->level() + 3)) {
   nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
 }
 
@@ -73,54 +64,53 @@ void ROAMTree::SplitNode(int pnode_index) {
   }
 }
 
-int32* ROAMTree::indices(int node_index, int leftx, int lefty,
-                          int rightx, int righty,
-                          int apexx, int apexy, int32* indices_ptr) {
+void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
+  int centx = (tri.leftx + tri.rightx) >> 1;
+  int centy = (tri.lefty + tri.righty) >> 1;
+  l->leftx  = tri.apexx; l->lefty  = tri.apexy;
+  l->rightx  = tri.leftx; l->righty = tri.lefty;
+  l->apexx  = centx; l->apexy  = centy;
+
+  r->leftx  = tri.rightx, r->lefty  = tri.righty;
+  r->rightx  = tri.apexx; r->righty  = tri.apexy;
+  r->apexx  = centx; r->apexy  = centy;
+}
+
+int32* ROAMTree::indices(int node_index, const Triangle& tri, int32* indices_ptr) {
   
   int32* cur = indices_ptr;
   if (has_child(node_index)) {
-    int centx = (leftx + rightx) >> 1;
-    int centy = (lefty + righty) >> 1;
     int lchild = node_index << 2;
     int rchild = lchild + 1;
-    cur = indices(lchild, apexx, apexy, leftx, lefty, centx, centy, cur);
-    cur = indices(rchild, rightx, righty, apexx, apexy, centx, centy, cur);
+    Triangle l, r;
+    split_triangle(tri, &l, &r);
+    cur = indices(lchild, l, cur);
+    cur = indices(rchild, r, cur);
     return cur;
   } else {
-    *cur++ = get_index(leftx, lefty);
-    *cur++ = get_index(rightx, righty);
-    *cur++ = get_index(apexx, apexy);
+    *cur++ = get_index(tri.leftx, tri.lefty);
+    *cur++ = get_index(tri.rightx, tri.righty);
+    *cur++ = get_index(tri.apexx, tri.apexy);
     return cur;
   }
 }
 
 int32* ROAMTree::indices(int32* indicesptr) {
-  const azer::Tile::Pitch& pitch = pitch_;
-  int32* cur = indicesptr;
-  cur = indices(1, pitch.left, pitch.bottom, pitch.right, pitch.top,
-                pitch.left, pitch.top, cur);
-  cur = indices(2, pitch.right, pitch.top, pitch.left, pitch.bottom,
-                pitch.right, pitch.bottom, cur);
-  return cur;
+  return indices(1, tri_, indicesptr);
 }
 
-void ROAMTree::RecursSplit(int pnode_index, int leftx, int lefty,
-                           int rightx, int righty, int apexx, int apexy) {
+void ROAMTree::RecursSplit(int pnode_index, const Triangle& tri) {
   SplitNode(pnode_index);
-  if (rightx - rightx > 1 || righty - lefty > 1) {
-    int centx = (leftx + rightx) >> 1;
-    int centy = (lefty + righty) >> 1;
-    RecursSplit(pnode_index << 2, apexx, apexy, leftx, lefty, centx, centy);
-    RecursSplit((pnode_index << 2) + 1, rightx, righty, apexx, apexy, centx, centy);
+  if (std::abs(tri.apexx - tri.leftx) > 32 || std::abs(tri.apexy - tri.lefty) > 32) {
+    Triangle l, r;
+    split_triangle(tri, &l, &r);
+    RecursSplit(pnode_index << 2, l);
+    RecursSplit((pnode_index << 2) + 1, r);
   }
 }
 
-
 void ROAMTree::tessellate() {
   reset();
-  const azer::Tile::Pitch& pitch = pitch_;
-  RecursSplit(1, pitch.left, pitch.bottom, pitch.right, pitch.top,
-              pitch.left, pitch.top);
-  RecursSplit(2, pitch.right, pitch.top, pitch.left, pitch.bottom,
-              pitch.right, pitch.bottom);
+  const Triangle& tri = tri_;
+  RecursSplit(0, tri_);
 }

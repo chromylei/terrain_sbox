@@ -20,8 +20,11 @@ class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
       : tile_(8)
-      , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-      , roam_(&tile_) {
+      , heightmap_(FilePath(HEIGHTMAP_PATH), 1024) {
+    ROAMTree::Triangle l(0, tile_.GetGridLineNum() - 1,
+                         tile_.GetGridLineNum() - 1, 0,
+                         0, 0);
+    left_tri_.reset(new ROAMTree(&tile_, l));
   }
   virtual void OnCreate() {}
 
@@ -38,7 +41,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::IndicesDataPtr idata_ptr_;
   std::unique_ptr<DiffuseEffect> effect_;
   RawHeightmap heightmap_;
-  ROAMTree roam_;
+  std::unique_ptr<ROAMTree> left_tri_;
   int32 indices_num_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -100,8 +103,8 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   azer::Radians camera_speed(azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 
-  roam_.tessellate();
-  int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
+  left_tri_->tessellate();
+  int32 * end = left_tri_->indices((int32*)idata_ptr_->pointer());
   indices_num_ = end - (int32*)idata_ptr_->pointer();
   azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
   memcpy(data->data_ptr(), idata_ptr_->pointer(), indices_num_ * sizeof(int32));

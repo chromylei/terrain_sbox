@@ -1,6 +1,7 @@
 #pragma once
 
 #include "azer/util/tile.h"
+#include "base/basictypes.h"
 
 /**
  * ROAMTree 分割 三角形 并生成 indices
@@ -9,11 +10,28 @@
  * 这个问题的重要程度需要评估，因为 error metric 会保证近处的 pitch 会被尽量分割
  * 因此实际上这个错误是很小的，对比两种实现方式
  * 如果使用 normalmap 这个问题就没有了
+ *
  */
+
 class ROAMTree {
  public:
-  ROAMTree(azer::Tile* tile, azer::Tile::Pitch& patch);
-  ROAMTree(azer::Tile* tile);
+  struct Triangle {
+    int leftx;
+    int lefty;
+    int rightx;
+    int righty;
+    int apexx;
+    int apexy;
+
+    Triangle() {}
+    Triangle(int lx, int ly, int rx, int ry, int ax, int ay)
+        : leftx(lx), lefty(ly)
+        , rightx(rx), righty(ry)
+        , apexx(ax), apexy(ay) {
+    }
+  };
+
+  ROAMTree(azer::Tile* tile, const Triangle&);
 
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
@@ -44,29 +62,27 @@ class ROAMTree {
   bool has_right_neighbor(BiTriTreeNode* node) { return node->right_neighbor != 0;}
   bool has_base_neighbor(BiTriTreeNode* node) { return node->base_neighbor != 0;}
 
+  void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
+
   // 跟据 x, y 获得 vertices 的 index
   int32 get_index(int x, int y);
   /**
    * 递归的产生 indices
    */
-  int32* indices(int node_index, int leftx, int lefty, int rightx, int righty,
-                 int apexx, int apexy, int32* indices);
+  int32* indices(int node_index, const Triangle& triangle, int32* indices);
 
   /**
    * 递归的分割节点
    */
-  void RecursSplit(int nodeindex, int leftx, int lefty,
-                   int rightx, int righty, int apexx, int apexy);
+  void RecursSplit(int nodeindex, const Triangle& triangle);
   void SplitNode(int nodeindex);
   bool has_child(int index) const;
 
   /**
    * 使用数组来表示这个树结构
-   * 由于 ROAMTree 实际上分割了一个正方形，因此它有两个根节点 1， 2
-   * 节点 0 没有作用
    */
   std::unique_ptr<BiTriTreeNode[]> nodes_;
-  const azer::Tile::Pitch pitch_;
+  const Triangle tri_;
   azer::Tile* tile_;
   int node_num_;
   const int kMaxNodeNum;
