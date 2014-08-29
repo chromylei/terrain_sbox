@@ -66,8 +66,8 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
-    int tx = (pos.x - tile_.minx()) / tile_.x_range() * heightmap_.width();
-    int ty = (pos.z - tile_.minz()) / tile_.z_range() * heightmap_.width();
+    int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_.width() - 1);
+    int ty = (pos.z - tile_.minz()) / tile_.z_range() * (heightmap_.width() - 1);
     float height = heightmap_.height(tx, ty);
     v->position = azer::Vector4(pos.x, height * 0.1, pos.z, 1.0f);
     v++;

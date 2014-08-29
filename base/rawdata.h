@@ -2,6 +2,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 
 class RawHeightmap {
  public:
@@ -22,5 +23,9 @@ class RawHeightmap {
 };
 
 inline uint8 RawHeightmap::height(int x, int y) const {
-  return data_.get()[(y + 1) * kSize + x];
+  int index = (y + 1) * kSize + x;
+  DCHECK_LT(y, kSize + 2);
+  DCHECK_LT(x, kSize);
+  DCHECK_LT(index, kSize * kSize + kSize * 2);
+  return data_.get()[index];
 }
