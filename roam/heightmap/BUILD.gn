@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_roam_heightmap_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+
+executable("tersbox_roam_heightmap") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_roam_heightmap_effect",
+         ]
+}
