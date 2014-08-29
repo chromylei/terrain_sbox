@@ -1,17 +1,14 @@
 #include "tersbox/roam/indices/roam.h"
 
-ROAMPitch::ROAMPitch(azer::Tile* tile)
+ROAMTree::ROAMTree(azer::Tile* tile, azer::Tile::Pitch& pitch)
     : tile_(tile)
+    , pitch_(pitch)
     , node_num_(0)
     , kMaxNodeNum(std::pow(2.0f, tile_->level() + 1)) {
   nodes_.reset(new BiTriTreeNode[]);
 }
 
-void ROAMPitch::tessellate() {
-}
-
-void ROAMPitch::RecursSplit(int pnode_index, int leftx, int lefty,
-                            int rightx, int righty, int apexx, int apexy) {
+void ROAMTree::SplitNode(int pnode_index) {
   BiTriTreeNode* nodes = nodes_.get();
   BiTriTreeNode* pnode = nodes + pnode_index;
   pnode->haschild = true;
@@ -54,19 +51,25 @@ void ROAMPitch::RecursSplit(int pnode_index, int leftx, int lefty,
   if (has_base_neighbor(pnode)) {
     BiTriTreeNode* bneighbor = nodes + pnode->base_neighbor;
     if (bneighbor->haschild) {
-      BiTriTreeNode* blchild = nodes + pnode->base_neighbor >> 2;
+      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor >> 2);
       BiTriTreeNode* brchild = nodes + (pnode->base_neighbor >> 2) + 1;
       blchild->left_neighbor = lchild_index;
       brchild->right_neighbor = rchild_index;
-      lchild->right_neighbor = pnode->base_neighbor >> 2;
+      lchild->right_neighbor = (pnode->base_neighbor >> 2);
       rchild->left_neighbor = (pnode->base_neighbor >> 2) + 1;
     } else {
     }
   } else {
+    SplitNode(pnode->base_neighbor);
   }
 }
 
-int32* ROAMPitch::indices(int node_index, int leftx, int lefty,
+void ROAMTree::RecursSplit(int pnode_index, int leftx, int lefty,
+                           int rightx, int righty, int apexx, int apexy) {
+  SplitNode(pnode_index);
+}
+
+int32* ROAMTree::indices(int node_index, int leftx, int lefty,
                           int rightx, int righty,
                           int apexx, int apexy, int32* indices_ptr) {
   
@@ -85,4 +88,22 @@ int32* ROAMPitch::indices(int node_index, int leftx, int lefty,
     *cur++ = get_index(apexx, apexy);
     return cur;
   }
+}
+
+int32* ROAMTree::indices(int32* indicesptr) {
+  const azer::Tile::Pitch& pitch = pitch_;
+  int32* cur = indicesptr;
+  cur = indices(1, pitch.left, pitch.bottom, pitch.right, pitch.top,
+                pitch.left, pitch.top, cur);
+  cur = indices(2, pitch.right, pitch.top, pitch.left, pitch.bottom,
+                pitch.right, pitch.bottom, cur);
+  return cur;
+}
+
+void ROAMTree::tessellate() {
+  const azer::Tile::Pitch& pitch = pitch_;
+  RecursSplit(1, pitch.left, pitch.bottom, pitch.right, pitch.top,
+              pitch.left, pitch.top);
+  RecursSplit(2, pitch.right, pitch.top, pitch.left, pitch.bottom,
+              pitch.right, pitch.bottom);
 }
