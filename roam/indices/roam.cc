@@ -5,7 +5,16 @@ ROAMTree::ROAMTree(azer::Tile* tile, azer::Tile::Pitch& pitch)
     , pitch_(pitch)
     , node_num_(0)
     , kMaxNodeNum(std::pow(2.0f, tile_->level() + 1)) {
-  nodes_.reset(new BiTriTreeNode[]);
+  nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
+}
+
+ROAMTree::ROAMTree(azer::Tile* tile)
+    : tile_(tile)
+    , pitch_(azer::Tile::Pitch(0, 0, tile->GetGridLineNum() - 1,
+                               tile->GetGridLineNum() - 1))
+    , node_num_(0)
+    , kMaxNodeNum(std::pow(2.0f, tile_->level() + 1)) {
+  nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
 }
 
 void ROAMTree::SplitNode(int pnode_index) {
@@ -51,22 +60,17 @@ void ROAMTree::SplitNode(int pnode_index) {
   if (has_base_neighbor(pnode)) {
     BiTriTreeNode* bneighbor = nodes + pnode->base_neighbor;
     if (bneighbor->haschild) {
-      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor >> 2);
-      BiTriTreeNode* brchild = nodes + (pnode->base_neighbor >> 2) + 1;
+      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor << 2);
+      BiTriTreeNode* brchild = nodes + (pnode->base_neighbor << 2) + 1;
       blchild->left_neighbor = lchild_index;
       brchild->right_neighbor = rchild_index;
-      lchild->right_neighbor = (pnode->base_neighbor >> 2);
-      rchild->left_neighbor = (pnode->base_neighbor >> 2) + 1;
+      lchild->right_neighbor = (pnode->base_neighbor << 2);
+      rchild->left_neighbor = (pnode->base_neighbor << 2) + 1;
     } else {
+      SplitNode(pnode->base_neighbor);
     }
   } else {
-    SplitNode(pnode->base_neighbor);
   }
-}
-
-void ROAMTree::RecursSplit(int pnode_index, int leftx, int lefty,
-                           int rightx, int righty, int apexx, int apexy) {
-  SplitNode(pnode_index);
 }
 
 int32* ROAMTree::indices(int node_index, int leftx, int lefty,
@@ -100,7 +104,20 @@ int32* ROAMTree::indices(int32* indicesptr) {
   return cur;
 }
 
+void ROAMTree::RecursSplit(int pnode_index, int leftx, int lefty,
+                           int rightx, int righty, int apexx, int apexy) {
+  SplitNode(pnode_index);
+  if (rightx - rightx > 1 || righty - lefty > 1) {
+    int centx = (leftx + rightx) >> 1;
+    int centy = (lefty + righty) >> 1;
+    RecursSplit(pnode_index << 2, apexx, apexy, leftx, lefty, centx, centy);
+    RecursSplit((pnode_index << 2) + 1, rightx, righty, apexx, apexy, centx, centy);
+  }
+}
+
+
 void ROAMTree::tessellate() {
+  reset();
   const azer::Tile::Pitch& pitch = pitch_;
   RecursSplit(1, pitch.left, pitch.bottom, pitch.right, pitch.top,
               pitch.left, pitch.top);

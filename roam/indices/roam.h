@@ -13,6 +13,7 @@
 class ROAMTree {
  public:
   ROAMTree(azer::Tile* tile, azer::Tile::Pitch& patch);
+  ROAMTree(azer::Tile* tile);
 
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
@@ -35,14 +36,13 @@ class ROAMTree {
   };
 
   void tessellate();
+  int32* indices(int32* indices);
 
+  void reset();
+ private:
   bool has_left_neighbor(BiTriTreeNode* node) { return node->left_neighbor != 0;}
   bool has_right_neighbor(BiTriTreeNode* node) { return node->right_neighbor != 0;}
   bool has_base_neighbor(BiTriTreeNode* node) { return node->base_neighbor != 0;}
-
-  int32* indices(int32* indices);
- private:
-  void reset();
 
   // 跟据 x, y 获得 vertices 的 index
   int32 get_index(int x, int y);

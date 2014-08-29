@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/rawdata.h"
+#include "tersbox/roam/indices/roam.h"
 
 #include <tchar.h>
 
@@ -18,8 +19,9 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(8)
-      , heightmap_(FilePath(HEIGHTMAP_PATH), 1024) {
+      : tile_(4)
+      , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
+      , roam_(&tile_) {
   }
   virtual void OnCreate() {}
 
@@ -33,8 +35,11 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
+  azer::IndicesDataPtr idata_ptr_;
   std::unique_ptr<DiffuseEffect> effect_;
   RawHeightmap heightmap_;
+  ROAMTree roam_;
+  int32 indices_num_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -66,20 +71,27 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
+    /*
     int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_.width() - 1);
     int ty = (pos.z - tile_.minz()) / tile_.z_range() * (heightmap_.width() - 1);
     float height = heightmap_.height(tx, ty);
     v->position = azer::Vector4(pos.x, height * 0.1, pos.z, 1.0f);
+    */
+    v->position = azer::Vector4(pos.x, 0.0f, pos.z, 1.0f);
     v++;
   }
 
-  azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32));
-  memcpy(idata_ptr->pointer(), &(tile_.indices()[0]),
+  idata_ptr_.reset(new azer::IndicesData(tile_.indices().size(),
+                                         azer::IndicesData::kUint32));
+  memcpy(idata_ptr_->pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
+
+  azer::IndicesBuffer::Options ibopt;
+  ibopt.cpu_access = azer::kCPUWrite;
+  ibopt.usage = azer::GraphicBuffer::kDynamic;
+  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr_));
 }
 
 
@@ -87,6 +99,13 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
   azer::Radians camera_speed(azer::kPI / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
+
+  roam_.tessellate();
+  int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
+  indices_num_ = end - (int32*)idata_ptr_->pointer();
+  azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
+  memcpy(data->data_ptr(), idata_ptr_->pointer(), indices_num_ * sizeof(int32));
+  ib_->unmap();
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -100,7 +119,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->Use(renderer);
-  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+  renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList, indices_num_);
 }
 
 int main(int argc, char* argv[]) {
