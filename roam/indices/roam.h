@@ -15,23 +15,7 @@
 
 class ROAMTree {
  public:
-  struct Triangle {
-    int leftx;
-    int lefty;
-    int rightx;
-    int righty;
-    int apexx;
-    int apexy;
-
-    Triangle() {}
-    Triangle(int lx, int ly, int rx, int ry, int ax, int ay)
-        : leftx(lx), lefty(ly)
-        , rightx(rx), righty(ry)
-        , apexx(ax), apexy(ay) {
-    }
-  };
-
-  ROAMTree(azer::Tile* tile, const Triangle&);
+  ROAMTree(azer::Tile* tile);
 
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
@@ -58,6 +42,22 @@ class ROAMTree {
 
   void reset();
  private:
+  struct Triangle {
+    int leftx;
+    int lefty;
+    int rightx;
+    int righty;
+    int apexx;
+    int apexy;
+
+    Triangle() {}
+    Triangle(int lx, int ly, int rx, int ry, int ax, int ay)
+        : leftx(lx), lefty(ly)
+        , rightx(rx), righty(ry)
+        , apexx(ax), apexy(ay) {
+    }
+  };
+
   bool has_left_neighbor(BiTriTreeNode* node) { return node->left_neighbor != 0;}
   bool has_right_neighbor(BiTriTreeNode* node) { return node->right_neighbor != 0;}
   bool has_base_neighbor(BiTriTreeNode* node) { return node->base_neighbor != 0;}
@@ -82,7 +82,7 @@ class ROAMTree {
    * 使用数组来表示这个树结构
    */
   std::unique_ptr<BiTriTreeNode[]> nodes_;
-  const Triangle tri_;
+  const azer::Tile::Pitch pitch_;
   azer::Tile* tile_;
   int node_num_;
   const int kMaxNodeNum;

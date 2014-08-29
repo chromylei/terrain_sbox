@@ -1,8 +1,8 @@
 #include "tersbox/roam/indices/roam.h"
 
-ROAMTree::ROAMTree(azer::Tile* tile, const Triangle& tri)
+ROAMTree::ROAMTree(azer::Tile* tile)
     : tile_(tile)
-    , tri_(tri)
+    , pitch_(0, tile->GetGridLineNum() - 1, 0, tile->GetGridLineNum() - 1)
     , node_num_(0)
     , kMaxNodeNum(std::pow(2.0f, tile_->level() + 3)) {
   nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
@@ -11,6 +11,9 @@ ROAMTree::ROAMTree(azer::Tile* tile, const Triangle& tri)
 void ROAMTree::SplitNode(int pnode_index) {
   BiTriTreeNode* nodes = nodes_.get();
   BiTriTreeNode* pnode = nodes + pnode_index;
+
+  if (pnode->haschild) return;
+
   pnode->haschild = true;
   const int lchild_index = pnode_index << 2;
   const int rchild_index = lchild_index + 1;
@@ -77,7 +80,6 @@ void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
 }
 
 int32* ROAMTree::indices(int node_index, const Triangle& tri, int32* indices_ptr) {
-  
   int32* cur = indices_ptr;
   if (has_child(node_index)) {
     int lchild = node_index << 2;
@@ -96,12 +98,20 @@ int32* ROAMTree::indices(int node_index, const Triangle& tri, int32* indices_ptr
 }
 
 int32* ROAMTree::indices(int32* indicesptr) {
-  return indices(1, tri_, indicesptr);
+  ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.top);
+  ROAMTree::Triangle r(pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.bottom);
+  int32* cur = indices(1, l, indicesptr);
+  return indices(2, r, cur);
 }
 
 void ROAMTree::RecursSplit(int pnode_index, const Triangle& tri) {
   SplitNode(pnode_index);
-  if (std::abs(tri.apexx - tri.leftx) > 32 || std::abs(tri.apexy - tri.lefty) > 32) {
+  if (std::abs(tri.apexx - tri.leftx) > 32
+      || std::abs(tri.apexy - tri.lefty) > 32) {
     Triangle l, r;
     split_triangle(tri, &l, &r);
     RecursSplit(pnode_index << 2, l);
@@ -110,7 +120,16 @@ void ROAMTree::RecursSplit(int pnode_index, const Triangle& tri) {
 }
 
 void ROAMTree::tessellate() {
+  ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.top);
+  ROAMTree::Triangle r(pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.bottom);
   reset();
-  const Triangle& tri = tri_;
-  RecursSplit(0, tri_);
+
+  (nodes_.get())[1].base_neighbor = 2;
+  (nodes_.get())[2].base_neighbor = 1;
+  RecursSplit(1, l);
+  RecursSplit(2, r);
 }
