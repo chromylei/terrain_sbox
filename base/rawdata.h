@@ -3,6 +3,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "azer/base/image.h"
 
 class RawHeightmap {
  public:
@@ -29,3 +30,5 @@ inline uint8 RawHeightmap::height(int x, int y) const {
   DCHECK_LT(index, kSize * kSize + kSize * 2);
   return data_.get()[index];
 }
+
+azer::ImagePtr CreateGridTex();
