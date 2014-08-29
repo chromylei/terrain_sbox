@@ -19,7 +19,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(8)
+      : tile_(4)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
       , roam_(&tile_) {
   }

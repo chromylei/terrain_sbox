@@ -2,9 +2,9 @@
 
 ROAMTree::ROAMTree(azer::Tile* tile)
     : tile_(tile)
-    , pitch_(0, tile->GetGridLineNum() - 1, 0, tile->GetGridLineNum() - 1)
+    , pitch_(0, 0, tile->GetGridLineNum() - 1, tile->GetGridLineNum() - 1)
     , node_num_(0)
-    , kMaxNodeNum(std::pow(2.0f, tile_->level() + 3)) {
+    , kMaxNodeNum(std::pow(2.0f, std::pow(2.0f, tile_->level() + 1)))
   nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
 }
 
@@ -15,8 +15,8 @@ void ROAMTree::SplitNode(int pnode_index) {
   if (pnode->haschild) return;
 
   pnode->haschild = true;
-  const int lchild_index = pnode_index << 2;
-  const int rchild_index = lchild_index + 1;
+  const int lchild_index = (pnode_index << 1) + 1;
+  const int rchild_index = (pnode_index << 1) + 2;
   BiTriTreeNode* lchild = nodes + lchild_index;
   BiTriTreeNode* rchild = lchild + 1;
   lchild->base_neighbor = pnode->left_neighbor;
@@ -54,17 +54,19 @@ void ROAMTree::SplitNode(int pnode_index) {
   if (has_base_neighbor(pnode)) {
     BiTriTreeNode* bneighbor = nodes + pnode->base_neighbor;
     if (bneighbor->haschild) {
-      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor << 2);
-      BiTriTreeNode* brchild = nodes + (pnode->base_neighbor << 2) + 1;
+      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor << 1) + 1;
+      BiTriTreeNode* brchild = nodes + (pnode->base_neighbor << 1) + 2;
       blchild->left_neighbor = lchild_index;
       brchild->right_neighbor = rchild_index;
-      lchild->right_neighbor = (pnode->base_neighbor << 2);
-      rchild->left_neighbor = (pnode->base_neighbor << 2) + 1;
+      lchild->right_neighbor = (pnode->base_neighbor << 1) + 1;
+      rchild->left_neighbor = (pnode->base_neighbor << 1) + 2;
     } else {
       SplitNode(pnode->base_neighbor);
     }
   } else {
   }
+
+  node_num_ += 2;
 }
 
 void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
@@ -82,8 +84,8 @@ void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
 int32* ROAMTree::indices(int node_index, const Triangle& tri, int32* indices_ptr) {
   int32* cur = indices_ptr;
   if (has_child(node_index)) {
-    int lchild = node_index << 2;
-    int rchild = lchild + 1;
+    int lchild = (node_index << 1) + 1;
+    int rchild = (node_index << 1) + 2;
     Triangle l, r;
     split_triangle(tri, &l, &r);
     cur = indices(lchild, l, cur);
@@ -109,13 +111,13 @@ int32* ROAMTree::indices(int32* indicesptr) {
 }
 
 void ROAMTree::RecursSplit(int pnode_index, const Triangle& tri) {
-  SplitNode(pnode_index);
-  if (std::abs(tri.apexx - tri.leftx) > 32
-      || std::abs(tri.apexy - tri.lefty) > 32) {
+  if (std::abs(tri.apexx - tri.leftx) > 1
+      || std::abs(tri.apexy - tri.lefty) > 1) {
+    SplitNode(pnode_index);
     Triangle l, r;
     split_triangle(tri, &l, &r);
-    RecursSplit(pnode_index << 2, l);
-    RecursSplit((pnode_index << 2) + 1, r);
+    RecursSplit((pnode_index << 1) + 1, l);
+    RecursSplit((pnode_index << 1) + 2, r);
   }
 }
 
@@ -128,6 +130,7 @@ void ROAMTree::tessellate() {
                        pitch_.right, pitch_.bottom);
   reset();
 
+  node_num_ = 3;
   (nodes_.get())[1].base_neighbor = 2;
   (nodes_.get())[2].base_neighbor = 1;
   RecursSplit(1, l);
