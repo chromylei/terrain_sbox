@@ -63,7 +63,7 @@ void MainDelegate::Init() {
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
 
-  light_.dir = azer::Vector4(0.0f, -0.6f, 0.4f, 1.0f);
+  light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
 }
