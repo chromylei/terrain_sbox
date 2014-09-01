@@ -105,7 +105,9 @@ class ROAMTree {
 };
 
 inline void ROAMTree::reset() {
-  node_num_ = 0;
+  left_root_ = NULL;
+  right_root_ = NULL;
+  arena_.reset();
 }
 
 inline int32 ROAMTree::get_index(int x, int y) {

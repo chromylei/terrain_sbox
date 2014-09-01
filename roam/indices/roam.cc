@@ -124,6 +124,8 @@ void ROAMTree::tessellate() {
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
   reset();
+  left_root_ = allocate();
+  right_root_ = allocate();
   RecursSplit(left_root_, l);
   RecursSplit(right_root_, r);
 }
