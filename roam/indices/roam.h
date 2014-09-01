@@ -24,16 +24,18 @@ class ROAMTree {
    *
    */
   struct BiTriTreeNode {
-    int base_neighbor;
-    int left_neighbor;
-    int right_neighbor;
-    int haschild;
+    BiTriTreeNode* left_child;
+    BiTriTreeNode* right_child;
+    BiTriTreeNode* base_neighbor;
+    BiTriTreeNode* left_neighbor;
+    BiTriTreeNode* right_neighbor;
 
     BiTriTreeNode()
-        : base_neighbor(0)
-        , left_neighbor(0)
-        , right_neighbor(0)
-        , haschild(0) {
+        : left_child(NULL)
+        , right_child(NULL)
+        , base_neighbor(NULL)
+        , left_neighbor(NULL)
+        , right_neighbor(NULL) {
     }
   };
 
@@ -58,10 +60,6 @@ class ROAMTree {
     }
   };
 
-  bool has_left_neighbor(BiTriTreeNode* node) { return node->left_neighbor != 0;}
-  bool has_right_neighbor(BiTriTreeNode* node) { return node->right_neighbor != 0;}
-  bool has_base_neighbor(BiTriTreeNode* node) { return node->base_neighbor != 0;}
-
   void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
 
   // 跟据 x, y 获得 vertices 的 index
@@ -69,33 +67,45 @@ class ROAMTree {
   /**
    * 递归的产生 indices
    */
-  int32* indices(int node_index, const Triangle& triangle, int32* indices);
+  int32* indices(BiTriTreeNode* node, const Triangle& triangle, int32* indices);
 
   /**
    * 递归的分割节点
    */
-  void RecursSplit(int nodeindex, const Triangle& triangle);
-  void SplitNode(int nodeindex);
-  bool has_child(int index) const;
+  void RecursSplit(BiTriTreeNode* node, const Triangle& triangle);
+  void SplitNode(BiTriTreeNode* node);
+
+  BiTriTreeNode* allocate();
 
   /**
    * 使用数组来表示这个树结构
    */
-  std::unique_ptr<BiTriTreeNode[]> nodes_;
-  const azer::Tile::Pitch pitch_;
+  class Arena {
+   public:
+    Arena() : vec_index_(0), node_num_(0) {}
+    BiTriTreeNode* allocate();
+    void reset();
+   private:
+    typedef std::vector<BiTriTreeNode> BiTriTreeNodeVec;
+    typedef std::vector<BiTriTreeNodeVec*> NodeBlockList;
+    int vec_index_;
+    int node_num_;
+    NodeBlockList block_;
+    static const int kBlockSize = 20480;
+    DISALLOW_COPY_AND_ASSIGN(Arena);
+  };
+
+  Arena arena_;
   azer::Tile* tile_;
+  const azer::Tile::Pitch pitch_;
+  BiTriTreeNode *left_root_;
+  BiTriTreeNode *right_root_;
   int node_num_;
-  const int kMaxNodeNum;
   DISALLOW_COPY_AND_ASSIGN(ROAMTree);
 };
 
 inline void ROAMTree::reset() {
   node_num_ = 0;
-  memset(nodes_.get(), 0 , kMaxNodeNum * sizeof(BiTriTreeNode));
-}
-
-inline bool ROAMTree::has_child(int index) const {
-  return nodes_.get()[index].haschild != 0;
 }
 
 inline int32 ROAMTree::get_index(int x, int y) {

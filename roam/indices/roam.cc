@@ -3,63 +3,59 @@
 ROAMTree::ROAMTree(azer::Tile* tile)
     : tile_(tile)
     , pitch_(0, 0, tile->GetGridLineNum() - 1, tile->GetGridLineNum() - 1)
-    , node_num_(0)
-    , kMaxNodeNum(std::pow(2.0f, std::pow(2.0f, tile_->level() + 1)))
-  nodes_.reset(new BiTriTreeNode[kMaxNodeNum]);
+    , left_root_(NULL)
+    , right_root_(NULL)
+    , node_num_(0) {
 }
 
-void ROAMTree::SplitNode(int pnode_index) {
-  BiTriTreeNode* nodes = nodes_.get();
-  BiTriTreeNode* pnode = nodes + pnode_index;
+void ROAMTree::SplitNode(BiTriTreeNode* pnode) {
+  if (pnode->left_child != NULL) return;
 
-  if (pnode->haschild) return;
-
-  pnode->haschild = true;
-  const int lchild_index = (pnode_index << 1) + 1;
-  const int rchild_index = (pnode_index << 1) + 2;
-  BiTriTreeNode* lchild = nodes + lchild_index;
-  BiTriTreeNode* rchild = lchild + 1;
+  pnode->left_child = allocate();
+  pnode->right_child = allocate();
+  BiTriTreeNode* lchild = pnode->left_child;
+  BiTriTreeNode* rchild = pnode->right_child;
   lchild->base_neighbor = pnode->left_neighbor;
-  lchild->left_neighbor = rchild_index;
+  lchild->left_neighbor = rchild;
 
   rchild->base_neighbor = pnode->right_neighbor;
-  rchild->right_neighbor = lchild_index;
+  rchild->right_neighbor = lchild;
   
-  if (has_left_neighbor(pnode)) {
-    BiTriTreeNode* lneighbor = nodes + pnode->left_neighbor;
-    if (lneighbor->base_neighbor == pnode_index) {
-      lneighbor->base_neighbor = lchild_index;
-    } else if (lneighbor->left_neighbor == pnode_index) {
-      lneighbor->left_neighbor = lchild_index;
-    } else if (lneighbor->right_neighbor == pnode_index) {
-      lneighbor->right_neighbor = lchild_index;
+  if (pnode->left_neighbor) {
+    BiTriTreeNode* lneighbor = pnode->left_neighbor;
+    if (lneighbor->base_neighbor == pnode) {
+      lneighbor->base_neighbor = lchild;
+    } else if (lneighbor->left_neighbor == pnode) {
+      lneighbor->left_neighbor = lchild;
+    } else if (lneighbor->right_neighbor == pnode) {
+      lneighbor->right_neighbor = lchild;
     } else {
       NOTREACHED();
     }
   }
 
-  if (has_right_neighbor(pnode)) {
-    BiTriTreeNode* rneighbor = nodes + pnode->right_neighbor;
-    if (rneighbor->base_neighbor == pnode_index) {
-      rneighbor->base_neighbor = rchild_index;
-    } else if (rneighbor->left_neighbor == pnode_index) {
-      rneighbor->left_neighbor = rchild_index;
-    } else if (rneighbor->right_neighbor == pnode_index) {
-      rneighbor->right_neighbor = rchild_index;
+  if (pnode->right_neighbor) {
+    BiTriTreeNode* rneighbor = pnode->right_neighbor;
+    if (rneighbor->base_neighbor == pnode) {
+      rneighbor->base_neighbor = rchild;
+    } else if (rneighbor->left_neighbor == pnode) {
+      rneighbor->left_neighbor = rchild;
+    } else if (rneighbor->right_neighbor == pnode) {
+      rneighbor->right_neighbor = rchild;
     } else {
       NOTREACHED();
     }
   }
 
-  if (has_base_neighbor(pnode)) {
-    BiTriTreeNode* bneighbor = nodes + pnode->base_neighbor;
-    if (bneighbor->haschild) {
-      BiTriTreeNode* blchild = nodes + (pnode->base_neighbor << 1) + 1;
-      BiTriTreeNode* brchild = nodes + (pnode->base_neighbor << 1) + 2;
-      blchild->left_neighbor = lchild_index;
-      brchild->right_neighbor = rchild_index;
-      lchild->right_neighbor = (pnode->base_neighbor << 1) + 1;
-      rchild->left_neighbor = (pnode->base_neighbor << 1) + 2;
+  if (pnode->base_neighbor) {
+    BiTriTreeNode* bneighbor = pnode->base_neighbor;
+    if (bneighbor->left_child) {
+      BiTriTreeNode* blchild = pnode->base_neighbor->left_child;
+      BiTriTreeNode* brchild = pnode->base_neighbor->right_child;
+      blchild->left_neighbor = lchild;
+      brchild->right_neighbor = rchild;
+      lchild->right_neighbor = pnode->base_neighbor->left_child;
+      rchild->left_neighbor = pnode->base_neighbor->right_child;
     } else {
       SplitNode(pnode->base_neighbor);
     }
@@ -81,15 +77,14 @@ void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
   r->apexx  = centx; r->apexy  = centy;
 }
 
-int32* ROAMTree::indices(int node_index, const Triangle& tri, int32* indices_ptr) {
+int32* ROAMTree::indices(BiTriTreeNode* node, const Triangle& tri,
+                         int32* indices_ptr) {
   int32* cur = indices_ptr;
-  if (has_child(node_index)) {
-    int lchild = (node_index << 1) + 1;
-    int rchild = (node_index << 1) + 2;
+  if (node->left_child) {
     Triangle l, r;
     split_triangle(tri, &l, &r);
-    cur = indices(lchild, l, cur);
-    cur = indices(rchild, r, cur);
+    cur = indices(node->left_child, l, cur);
+    cur = indices(node->right_child, r, cur);
     return cur;
   } else {
     *cur++ = get_index(tri.leftx, tri.lefty);
@@ -106,18 +101,18 @@ int32* ROAMTree::indices(int32* indicesptr) {
   ROAMTree::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
-  int32* cur = indices(1, l, indicesptr);
-  return indices(2, r, cur);
+  int32* cur = indices(left_root_, l, indicesptr);
+  return indices(right_root_, r, cur);
 }
 
-void ROAMTree::RecursSplit(int pnode_index, const Triangle& tri) {
+void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri) {
   if (std::abs(tri.apexx - tri.leftx) > 1
       || std::abs(tri.apexy - tri.lefty) > 1) {
-    SplitNode(pnode_index);
+    SplitNode(pnode);
     Triangle l, r;
     split_triangle(tri, &l, &r);
-    RecursSplit((pnode_index << 1) + 1, l);
-    RecursSplit((pnode_index << 1) + 2, r);
+    RecursSplit(pnode->left_child, l);
+    RecursSplit(pnode->right_child, r);
   }
 }
 
@@ -129,10 +124,32 @@ void ROAMTree::tessellate() {
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
   reset();
+  RecursSplit(left_root_, l);
+  RecursSplit(right_root_, r);
+}
 
-  node_num_ = 3;
-  (nodes_.get())[1].base_neighbor = 2;
-  (nodes_.get())[2].base_neighbor = 1;
-  RecursSplit(1, l);
-  RecursSplit(2, r);
+ROAMTree::BiTriTreeNode* ROAMTree::allocate() {
+  return arena_.allocate();
+}
+
+ROAMTree::BiTriTreeNode* ROAMTree::Arena::allocate() {
+  if (vec_index_ < block_.size()) {
+    if (node_num_ < kBlockSize) {
+      BiTriTreeNodeVec& vec = *block_[vec_index_];
+      return &(vec[node_num_++]);
+    } else {
+      vec_index_++;
+      BiTriTreeNodeVec& vec = *block_[vec_index_];
+      node_num_ = 0;
+      return &(vec[0]);
+    }
+  } else {
+    block_.push_back(new BiTriTreeNodeVec(kBlockSize));
+    return allocate();
+  }
+}
+
+void ROAMTree::Arena::reset() {
+  vec_index_ = 0;
+  node_num_ = 0;
 }
