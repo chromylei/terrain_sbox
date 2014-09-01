@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_roam_fcull_effect") {
+  source = "dirlight.afx"
+  filename = "dirlight"
+}
+
+
+executable("tersbox_roam_fcull") {
+  sources = ["main.cc", "roam.cc", "roam.h"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_roam_fcull_effect",
+         ]
+}
