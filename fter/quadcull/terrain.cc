@@ -123,7 +123,7 @@ void Terrain::OnRenderScene(azer::Renderer* renderer) {
   RenderPitch(frustrum_split_.none_pitches_, camera_.GetProjViewMatrix(), renderer);
 }
 
-void Terrain::RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
+void Terrain::RenderPitch(const std::vector<azer::Tile::Pitch>& pitches,
                           const azer::Matrix4& pv, azer::Renderer* renderer) {
   for (auto iter = pitches.begin(); iter != pitches.end(); ++iter) {
     azer::Vector3& p1 = tile_.vertex(iter->left, iter->top);
@@ -133,7 +133,7 @@ void Terrain::RenderPitch(const std::vector<azer::util::Tile::Pitch>& pitches,
 }
 
 
-using azer::util::QuadTree;
+using azer::Tile;
 
 void FrustrumSplit::clear() {
   partial_pitches_.clear();
@@ -141,7 +141,8 @@ void FrustrumSplit::clear() {
   none_pitches_.clear();
 }
 
-QuadTree::Splitable::SplitRes FrustrumSplit::Split(const QuadTree::Node& node) {
+Tile::QuadTree::Splitable::SplitRes FrustrumSplit::Split(
+    const Tile::QuadTree::Node& node) {
   if (node.level > 3) {
     partial_pitches_.push_back(node.pitch);
     return kSplit;

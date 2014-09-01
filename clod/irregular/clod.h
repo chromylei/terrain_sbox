@@ -5,7 +5,7 @@
 
 class Clod {
  public:
-  Clod(azer::util::Tile* tile) : tile_(tile) {}
+  Clod(azer::Tile* tile) : tile_(tile) {}
 
   /**
    *  init indices for following geo
@@ -26,16 +26,16 @@ class Clod {
     kSplitOne    = 0x00000010,
     kSplitAll    = 0x0000000F,
   };
-  static int32* InitPitchFan(const azer::util::Tile::Pitch& pitch, int kGridLine,
+  static int32* InitPitchFan(const azer::Tile::Pitch& pitch, int kGridLine,
                              int32* indices, uint32 flags = kSplitAll);
 
   /**
    * generate indices for pitch
    */
-  int32* GenIndices(std::vector<azer::util::Tile::Pitch>* pitch,
+  int32* GenIndices(std::vector<azer::Tile::Pitch>* pitch,
                     int32* indices, uint32 flags = kSplitAll);
   int32* GenIndices(int32* indices, uint32 flags = kSplitAll);
-  int32* GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
+  int32* GenIndices(azer::Tile::Pitch& pitch, int32* indices,
                     uint32 flags = kSplitAll);
 
   /**
@@ -48,7 +48,7 @@ class Clod {
    *  level = 2 ‘ÚŒﬁÀ˘ŒΩ
    */
   int32* GenIndices(int32* indices, int32* splitlevel);
-  int32* GenIndices(const azer::util::Tile::Pitch& pitch,
+  int32* GenIndices(const azer::Tile::Pitch& pitch,
                     int32* indices, int32* splitlevel);
   void CalcLOD();
   int level(int x, int y, int32* level);
@@ -57,7 +57,7 @@ class Clod {
   int right_level(int x, int y, int step, int32* level);
   int top_level(int x, int y, int step, int32* level);
   int bottom_level(int x, int y, int step, int32* level);
-  azer::util::Tile* tile_;
+  azer::Tile* tile_;
   std::unique_ptr<int32> levels_;
   DISALLOW_COPY_AND_ASSIGN(Clod);
 };

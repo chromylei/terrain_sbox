@@ -27,7 +27,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   void InitPhysicsBuffer(azer::RenderSystem* rs);
   azer::Camera camera_;
   FrustrumFrame frame_;
-  azer::util::Tile tile_;
+  azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   std::unique_ptr<DiffuseEffect> effect_;

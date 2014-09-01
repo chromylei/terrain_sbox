@@ -2,11 +2,11 @@
 
 #include "azer/util/tile.h"
 
-using azer::util::Tile;
+using azer::Tile;
 
 
 int32* Clod::GenIndices(int32* indices, uint32 flags) {
-  azer::util::Tile::Pitch pitch;
+  azer::Tile::Pitch pitch;
   int32* cur = indices;
   for (int i = 0; i + 4< tile_->GetGridLineNum(); i += 4) {
     for (int j = 0; j + 4 < tile_->GetGridLineNum(); j += 4) {
@@ -21,12 +21,12 @@ int32* Clod::GenIndices(int32* indices, uint32 flags) {
   return cur;
 }
 
-int32* Clod::GenIndices(azer::util::Tile::Pitch& pitch, int32* indices,
+int32* Clod::GenIndices(azer::Tile::Pitch& pitch, int32* indices,
                         uint32 flags) {
   return InitPitchFan(pitch, tile_->GetGridLineNum(), indices, flags);
 }
 
-int32* Clod::GenIndices(const azer::util::Tile::Pitch& pitch,
+int32* Clod::GenIndices(const azer::Tile::Pitch& pitch,
                         int32* indices, int32* levels) {
   int32* cur = indices;
   for (int i = pitch.top; i < pitch.bottom - 1; ++i) {
@@ -34,7 +34,7 @@ int32* Clod::GenIndices(const azer::util::Tile::Pitch& pitch,
       int level = levels[i * tile_->GetGridLineNum() + j];
       int step = std::pow(2.0f, 1 + level / 2);
       if (i % step == 0 && j % step == 0) {
-        azer::util::Tile::Pitch p;
+        azer::Tile::Pitch p;
         p.top = i;
         p.bottom = i + step;
         p.left = j;
@@ -67,7 +67,7 @@ int32* Clod::GenIndices(const azer::util::Tile::Pitch& pitch,
 }
 
 int32* Clod::GenIndices(int32* indices, int32* levels) {
-  azer::util::Tile::Pitch pitch;
+  azer::Tile::Pitch pitch;
   pitch.top = 0;
   pitch.left = 0;
   pitch.bottom = tile_->GetGridLineNum();

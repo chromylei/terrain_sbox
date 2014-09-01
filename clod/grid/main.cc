@@ -29,7 +29,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
   azer::Camera camera_;
-  azer::util::Tile tile_;
+  azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   std::unique_ptr<DiffuseEffect> effect_;

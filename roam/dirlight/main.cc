@@ -10,9 +10,9 @@
 
 #include <tchar.h>
 
-#include "diffuse.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/indices/"
-#define SHADER_NAME "diffuse.afx"
+#include "dirlight.afx.h"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/dirlight/"
+#define SHADER_NAME "dirlight.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/roam/data/height1024.raw")
 using base::FilePath;
 
@@ -36,7 +36,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::IndicesDataPtr idata_ptr_;
-  std::unique_ptr<DiffuseEffect> effect_;
+  std::unique_ptr<DirlightEffect> effect_;
+  DirlightEffect::DirLight light_;
   RawHeightmap heightmap_;
   ROAMTree roam_;
   int32 indices_num_;
@@ -58,17 +59,21 @@ void MainDelegate::Init() {
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
-  effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
+  effect_.reset(new DirlightEffect(shaders.GetShaderVec(), rs));
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
+
+  light_.dir = azer::Vector4(0.0f, -0.8f, 0.4f, 1.0f);
+  light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+  light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
 }
 
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
       new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
-  DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata->pointer();
-  DiffuseEffect::Vertex* v = vertex;
+  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
+  DirlightEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
     int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_.width() - 1);
@@ -116,6 +121,9 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
 
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
+  effect_->SetWorld(world);
+  effect_->SetDirLight(light_);
+  effect_->SetDiffuse(azer::Vector4(0.6f, 0.6f, 0.6f, 1.0f));
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList, indices_num_);
 }

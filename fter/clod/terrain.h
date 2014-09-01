@@ -7,13 +7,13 @@
 
 #include "clod.afx.h"
 
-using azer::util::Tile;
+using azer::Tile;
 
-class FrustrumSplit : public azer::util::QuadTree::Splitable {
+class FrustrumSplit : public azer::Tile::QuadTree::Splitable {
  public:
   FrustrumSplit(const Tile* tile, const azer::Frustrum* frustrum)
     : tile_(tile), frustrum_(frustrum) {}
-  virtual SplitRes Split(const azer::util::QuadTree::Node& node) OVERRIDE;
+  virtual SplitRes Split(const azer::Tile::QuadTree::Node& node) OVERRIDE;
   void clear();
  public:
   std::vector<Tile::Pitch> partial_pitches_;
@@ -59,7 +59,7 @@ class Terrain {
   azer::TexturePtr color_tex_;
   azer::TexturePtr detail_tex_;
   std::unique_ptr<ClodEffect> effect_;
-  azer::util::QuadTree quadtree_;
+  azer::Tile::QuadTree quadtree_;
   ClodEffect::DirLight light_;
   FrustrumSplit frustrum_split_;
   const azer::Camera& camera_;

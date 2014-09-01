@@ -4,5 +4,6 @@ group("tersbox_roam") {
     "grid:tersbox_roam_grid",
     "heightmap:tersbox_roam_heightmap",
     "indices:tersbox_roam_indices",
+    "dirlight:tersbox_roam_dirlight",
   ]
 }
