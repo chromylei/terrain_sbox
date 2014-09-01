@@ -50,7 +50,7 @@ void MainDelegate::Init() {
   renderer->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
   CHECK(renderer->GetFrontFace() == azer::kCounterClockwise);
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
-  renderer->SetFillMode(azer::kWireFrame);
+  // renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
   camera_.SetPosition(azer::Vector3(0.0f, 400.0f, -800.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
@@ -63,7 +63,7 @@ void MainDelegate::Init() {
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
 
-  light_.dir = azer::Vector4(0.0f, -0.8f, 0.4f, 1.0f);
+  light_.dir = azer::Vector4(0.0f, -0.6f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.1f, 0.10f, 0.10f, 1.0f);
 }
@@ -72,15 +72,25 @@ void MainDelegate::Init() {
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexDataPtr vdata(
       new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
+  int cnt = 0;
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
+      const azer::Vector3& pos = tile_.vertices()[cnt];
+      int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_.width() - 1);
+      int ty = (pos.z - tile_.minz()) / tile_.z_range() * (heightmap_.width() - 1);
+      float height = heightmap_.height(tx, ty);
+      tile_.SetHeight(i, j, height);
+      cnt++;
+    }
+  }
+  CHECK_EQ(cnt, tile_.GetVertexNum());
+  tile_.CalcNormal();
+
   DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
   DirlightEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
-    const azer::Vector3& pos = tile_.vertices()[i];
-    int tx = (pos.x - tile_.minx()) / tile_.x_range() * (heightmap_.width() - 1);
-    int ty = (pos.z - tile_.minz()) / tile_.z_range() * (heightmap_.width() - 1);
-    float height = heightmap_.height(tx, ty);
-    v->position = azer::Vector4(pos.x, height, pos.z, 1.0f);
-    // v->position = azer::Vector4(pos.x, 0.0f, pos.z, 1.0f);
+    v->position = tile_.vertices()[i];
+    v->normal = tile_.normal()[i];
     v++;
   }
 
