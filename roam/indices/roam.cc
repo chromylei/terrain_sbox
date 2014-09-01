@@ -141,9 +141,8 @@ ROAMTree::BiTriTreeNode* ROAMTree::Arena::allocate() {
       return &(vec[node_num_++]);
     } else {
       vec_index_++;
-      BiTriTreeNodeVec& vec = *block_[vec_index_];
       node_num_ = 0;
-      return &(vec[0]);
+      return allocate();
     }
   } else {
     block_.push_back(new BiTriTreeNodeVec(kBlockSize));
