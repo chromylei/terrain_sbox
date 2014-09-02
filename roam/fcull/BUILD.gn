@@ -6,7 +6,7 @@ afx("tersbox_roam_fcull_effect") {
 }
 
 
-executable("tersbox_roam_err_metric") {
+executable("tersbox_roam_fcull") {
   sources = ["main.cc", "roam.cc", "roam.h"]
   deps = ["//tersbox/base:tersbox_base",
           "//azer/render:render",
