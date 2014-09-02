@@ -19,7 +19,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(4, 5.0f)
+      : tile_(8, 2.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
       , roam_(&tile_, 2) {
   }
@@ -52,7 +52,8 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 600.0f, 0.0f));
+  camera_.frustrum().set_far(4000.0f);
+  camera_.SetPosition(azer::Vector3(0.0f, 1200.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   tile_.Init();
