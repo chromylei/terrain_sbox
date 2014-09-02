@@ -62,7 +62,7 @@ class ROAMTree {
 
 
   void Init();
-  void tessellate();
+  void tessellate(const azer::Camera& camera);
   int32* indices(int32* indices);
   void reset();
  private:
@@ -78,7 +78,8 @@ class ROAMTree {
   /**
    * 递归的分割节点
    */
-  void RecursSplit(BiTriTreeNode* node, const Triangle& triangle);
+  void RecursSplit(BiTriTreeNode* node, const Triangle& triangle,
+                   const azer::Camera& camera);
   void SplitNode(BiTriTreeNode* node, const Triangle& tri);
 
   BiTriTreeNode* allocate();

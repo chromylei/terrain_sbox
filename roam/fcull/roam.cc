@@ -1,9 +1,10 @@
-#include "tersbox/roam/err_metric/roam.h"
+#include "tersbox/roam/fcull/roam.h"
 
 #include <sstream>
 #include <iostream>
 
 const int kMinVariance = 8;
+#define SQR(x) ((x) * (x))
 
 ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
     : tile_(tile)
@@ -142,7 +143,8 @@ int32* ROAMTree::indices(int32* indicesptr) {
   return indices(right_root_, r, cur);
 }
 
-void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri) {
+void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
+                           const azer::Camera& camera) {
   SplitNode(pnode, tri);
 
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
@@ -150,15 +152,21 @@ void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri) {
     int centx = (tri.leftx + tri.rightx) >> 1;
     int centy = (tri.lefty + tri.righty) >> 1;
     uint8 var = variance(centx, centy);
-    if (var < kMinVariance) { return;}
-    Triangle l, r;
-    split_triangle(tri, &l, &r);
-    RecursSplit(pnode->left_child, l);
-    RecursSplit(pnode->right_child, r);
+
+    const azer::Vector3& vertex = tile_->vertex(centx, centy);
+    float distance = 1.0f + sqrtf(SQR(vertex.x - camera.position().x)
+                                  + SQR(vertex.z - camera.position().z));
+    float tri_var = var * (1 << tile_->level()) * 2 / distance;
+    if (tri_var > 50) {
+      Triangle l, r;
+      split_triangle(tri, &l, &r);
+      RecursSplit(pnode->left_child, l, camera);
+      RecursSplit(pnode->right_child, r, camera);
+    }
   }
 }
 
-void ROAMTree::tessellate() {
+void ROAMTree::tessellate(const azer::Camera& camera) {
   ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
@@ -172,8 +180,8 @@ void ROAMTree::tessellate() {
   right_root_->base_neighbor = left_root_;
   left_root_->triangle = l;
   right_root_->triangle = r;
-  RecursSplit(left_root_, l);
-  RecursSplit(right_root_, r);
+  RecursSplit(left_root_, l, camera);
+  RecursSplit(right_root_, r, camera);
 }
 
 void ROAMTree::Init() {

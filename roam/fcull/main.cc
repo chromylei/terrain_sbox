@@ -136,7 +136,7 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   camera_cull_.Update();
   frustrum_frame_.Update(camera_cull_);
 
-  roam_.tessellate();
+  roam_.tessellate(camera_cull_);
   int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
   indices_num_ = end - (int32*)idata_ptr_->pointer();
   azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
