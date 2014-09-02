@@ -21,7 +21,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   MainDelegate()
       : tile_(6, 5.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-      , roam_(&tile_) {
+      , roam_(&tile_, 2) {
   }
   virtual void OnCreate() {}
 
@@ -65,7 +65,7 @@ void MainDelegate::Init() {
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
 
-  // roam_.Init();
+  roam_.Init();
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);

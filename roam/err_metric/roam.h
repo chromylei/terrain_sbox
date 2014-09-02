@@ -16,7 +16,7 @@
 
 class ROAMTree {
  public:
-  ROAMTree(azer::Tile* tile);
+  ROAMTree(azer::Tile* tile, const int minlevel);
 
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
@@ -106,6 +106,7 @@ class ROAMTree {
   BiTriTreeNode *right_root_;
   std::unique_ptr<uint8[]> variance_;
   int node_num_;
+  const int kMinWidth;
   DISALLOW_COPY_AND_ASSIGN(ROAMTree);
 };
 
