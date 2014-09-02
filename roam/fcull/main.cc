@@ -62,8 +62,8 @@ void MainDelegate::Init() {
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 
-  // camera_cull_.SetPosition(azer::Vector3(0.0f, 0.0f, 0.0f));
-  // camera_cull_.SetLookAt(azer::Vector3(0.0f, 0.0f, -50.0f));
+  camera_cull_.SetPosition(azer::Vector3(0.0f, 0.0f, 0.0f));
+  camera_cull_.SetLookAt(azer::Vector3(0.0f, 0.0f, -50.0f));
   frustrum_frame_.Init(rs);
   tile_.Init();
   
@@ -132,8 +132,9 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   UpdatedownCamera(&camera_, camera_speed, delta_time);
   RendererControl(renderer, time);
 
-  // camera_cull_.yaw(azer::Radians(time));
-  // frustrum_frame_.Update(camera_cull_);
+  camera_cull_.yaw(camera_speed * delta_time);
+  camera_cull_.Update();
+  frustrum_frame_.Update(camera_cull_);
 
   roam_.tessellate();
   int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
@@ -159,7 +160,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList, indices_num_);
 
-  // frustrum_frame_.Render(camera_cull_.GetProjViewMatrix(), renderer);
+  frustrum_frame_.Render(camera_.GetProjViewMatrix(), renderer);
 }
 
 int main(int argc, char* argv[]) {
