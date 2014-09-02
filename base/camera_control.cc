@@ -47,3 +47,19 @@ void MovableControl(azer::MovableObject* obj, azer::Radians speed,
   }
 }
 
+void RendererControl(azer::Renderer* renderer, double time) {
+  static double prev_time = 0.0;
+  if (time - prev_time < 0.3) return;
+
+  prev_time = time;
+  if( ::GetAsyncKeyState('M') & 0x8000f ) {
+    azer::RenderSystem* rs = azer::RenderSystem::Current();
+    azer::Renderer* renderer = rs->GetDefaultRenderer();
+    azer::FillMode fill = renderer->GetFillMode();
+    if (fill == azer::kWireFrame) {
+      renderer->SetFillMode(azer::kSolid);
+    } else {
+      renderer->SetFillMode(azer::kWireFrame);
+    }
+  }
+}

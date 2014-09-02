@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "azer/util/tile.h"
 #include "base/basictypes.h"
 
@@ -39,9 +40,10 @@ class ROAMTree {
     }
   };
 
+
+  void Init();
   void tessellate();
   int32* indices(int32* indices);
-
   void reset();
  private:
   struct Triangle {
@@ -76,6 +78,8 @@ class ROAMTree {
   void SplitNode(BiTriTreeNode* node);
 
   BiTriTreeNode* allocate();
+  void CalcVariance();
+  uint8 RecursCalcVariable(const Triangle& triangle, uint8* vararr);
 
   /**
    * 使用数组来表示这个树结构
@@ -100,6 +104,7 @@ class ROAMTree {
   const azer::Tile::Pitch pitch_;
   BiTriTreeNode *left_root_;
   BiTriTreeNode *right_root_;
+  std::unique_ptr<uint8[]> variance_;
   int node_num_;
   DISALLOW_COPY_AND_ASSIGN(ROAMTree);
 };

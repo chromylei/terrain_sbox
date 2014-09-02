@@ -19,7 +19,7 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(8, 5.0f)
+      : tile_(6, 5.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
       , roam_(&tile_) {
   }
@@ -50,12 +50,13 @@ void MainDelegate::Init() {
   renderer->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
   CHECK(renderer->GetFrontFace() == azer::kCounterClockwise);
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
-  // renderer->SetFillMode(azer::kWireFrame);
+  renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 400.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 600.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   tile_.Init();
+  
 
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
@@ -63,6 +64,8 @@ void MainDelegate::Init() {
   effect_.reset(new DirlightEffect(shaders.GetShaderVec(), rs));
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
+
+  // roam_.Init();
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -112,7 +115,11 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
   azer::Radians camera_speed(azer::kPI / 2.0f);
+  azer::RenderSystem* rs = azer::RenderSystem::Current();
+  azer::Renderer* renderer = rs->GetDefaultRenderer();
+
   UpdatedownCamera(&camera_, camera_speed, delta_time);
+  RendererControl(renderer, time);
 
   roam_.tessellate();
   int32 * end = roam_.indices((int32*)idata_ptr_->pointer());

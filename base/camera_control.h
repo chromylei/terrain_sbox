@@ -4,3 +4,4 @@
 
 void UpdatedownCamera(azer::Camera* camera, azer::Radians speed, float delta_time);
 void MovableControl(azer::MovableObject* obj, azer::Radians speed, float delta_time);
+void RendererControl(azer::Renderer* renderer, double time);
