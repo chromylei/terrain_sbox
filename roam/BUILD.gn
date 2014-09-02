@@ -5,7 +5,7 @@ group("tersbox_roam") {
     "heightmap:tersbox_roam_heightmap",
     "indices:tersbox_roam_indices",
     "dirlight:tersbox_roam_dirlight",
-    "fcull:tersbox_roam_fcull",
+    "multitile:tersbox_roam_multitile",
     "err_metric:tersbox_roam_err_metric",
   ]
 }
