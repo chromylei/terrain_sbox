@@ -1,5 +1,10 @@
 #include "tersbox/roam/err_metric/roam.h"
 
+#include <sstream>
+#include <iostream>
+
+const int kMinVariance = 16;
+
 ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
     : tile_(tile)
     , pitch_(0, 0, tile->GetGridLineNum() - 1, tile->GetGridLineNum() - 1)
@@ -113,9 +118,8 @@ void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri) {
       || std::abs(tri.apexy - tri.lefty) > kMinWidth) {
     int centx = (tri.leftx + tri.rightx) >> 1;
     int centy = (tri.lefty + tri.righty) >> 1;
-    int index = centy * tile_->GetGridLineNum() + centx;
-    uint8 variance = variance_[index];
-    if (variance < 4) { return;}
+    uint8 var = variance(centx, centy);
+    if (var < kMinVariance) { return;}
     
     SplitNode(pnode);
     Triangle l, r;
@@ -154,6 +158,31 @@ void ROAMTree::CalcVariance() {
                        pitch_.right, pitch_.bottom);
   RecursCalcVariable(l, variance_.get());
   RecursCalcVariable(r, variance_.get());
+
+  /*
+  std::stringstream ss;
+  for (int i = 0; i < grid; ++i) {
+    for (int j = 0; j < grid; ++j) {
+      ss << (int)(variance_[i * grid + j]) << " ";
+    }
+    ss << "\n";
+  }
+  std::cout << ss.str() << std::endl;
+  */
+}
+
+void ROAMTree::set_variance(int x, int y, uint8 var) {
+  int grid = tile_->GetGridLineNum() + 1;
+  int index = y * grid + x;
+  DCHECK_LT(index, grid * grid);
+  variance_.get()[index] = var;
+}
+
+uint8 ROAMTree::variance(int x, int y) {
+  int grid = tile_->GetGridLineNum() + 1;
+  int index = y * grid + x;
+  DCHECK_LT(index, grid * grid);
+  return variance_.get()[index];
 }
 
 uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {  
@@ -162,23 +191,20 @@ uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {
   uint8 height = (uint8)(tile_->vertex(centx, centy).y);
   uint8 lheight = (uint8)(tile_->vertex(tri.leftx, tri.lefty).y);
   uint8 rheight = (uint8)(tile_->vertex(tri.rightx, tri.righty).y);
-  uint8 variance = std::abs((uint8)height
+  uint8 var = std::abs((uint8)height
                             - (((uint8)lheight + (uint8)rheight) >> 1));
 
   Triangle l, r;
   split_triangle(tri, &l, &r);
   if (std::abs(tri.leftx - tri.rightx) > kMinWidth
       || std::abs(tri.lefty - tri.righty) > kMinWidth) {
-    variance = std::max(variance, RecursCalcVariable(l, vararr));
-    variance = std::max(variance, RecursCalcVariable(r, vararr));
+    var = std::max(var, RecursCalcVariable(l, vararr));
+    var = std::max(var, RecursCalcVariable(r, vararr));
   }
 
-  int grid = tile_->GetGridLineNum() + 1;
-  int index = centy * grid + centx;
-  DCHECK_LT(index, grid * grid);
-  variance = std::max(vararr[index], variance);
-  vararr[index] = variance;
-  return variance;
+  var = std::max(variance(centx, centy), var);
+  set_variance(centx, centy, var);
+  return var;
 }
 
 ROAMTree::BiTriTreeNode* ROAMTree::allocate() {

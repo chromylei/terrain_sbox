@@ -99,6 +99,8 @@ class ROAMTree {
     DISALLOW_COPY_AND_ASSIGN(Arena);
   };
 
+  void set_variance(int x, int y, uint8 var);
+  uint8 variance(int x, int y);
   Arena arena_;
   azer::Tile* tile_;
   const azer::Tile::Pitch pitch_;

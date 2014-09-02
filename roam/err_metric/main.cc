@@ -21,7 +21,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   MainDelegate()
       : tile_(6, 5.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-      , roam_(&tile_, 2) {
+      , roam_(&tile_, 1) {
   }
   virtual void OnCreate() {}
 
@@ -94,6 +94,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   DirlightEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     v->position = tile_.vertices()[i];
+    // v->position.y = 0.0f;
     v->normal = tile_.normal()[i];
     v++;
   }
