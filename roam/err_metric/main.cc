@@ -6,12 +6,12 @@
 #include "base/files/file_path.h"
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/rawdata.h"
-#include "tersbox/roam/indices/roam.h"
+#include "tersbox/roam/err_metric/roam.h"
 
 #include <tchar.h>
 
 #include "dirlight.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/fcull/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/err_metric/"
 #define SHADER_NAME "dirlight.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/roam/data/height1024.raw")
 using base::FilePath;
@@ -52,7 +52,8 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   // renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 400.0f, -800.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 400.0f, 0.0f));
+  camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   tile_.Init();
 
