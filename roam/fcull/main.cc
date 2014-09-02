@@ -5,8 +5,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tersbox/base/camera_control.h"
+#include "tersbox/base/frustrum_frame.h"
 #include "tersbox/base/rawdata.h"
-#include "tersbox/roam/err_metric/roam.h"
+#include "tersbox/roam/fcull/roam.h"
 
 #include <tchar.h>
 
@@ -32,6 +33,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
   azer::Camera camera_;
+  
   azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
@@ -41,6 +43,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   RawHeightmap heightmap_;
   ROAMTree roam_;
   int32 indices_num_;
+
+  azer::Camera camera_cull_;
+  FrustrumFrame frustrum_frame_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -53,9 +58,13 @@ void MainDelegate::Init() {
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
   camera_.frustrum().set_far(4000.0f);
-  camera_.SetPosition(azer::Vector3(0.0f, 800.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 600.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
+
+  camera_cull_.SetPosition(azer::Vector3(0.0f, 0.0f, 0.0f));
+  camera_cull_.SetLookAt(azer::Vector3(0.0f, 0.0f, -50.0f));
+  frustrum_frame_.Init(rs);
   tile_.Init();
   
 
@@ -123,6 +132,9 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   UpdatedownCamera(&camera_, camera_speed, delta_time);
   RendererControl(renderer, time);
 
+  camera_cull_.yaw(azer::Radians(time));
+  frustrum_frame_.Update(camera_cull_);
+
   roam_.tessellate();
   int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
   indices_num_ = end - (int32*)idata_ptr_->pointer();
@@ -146,6 +158,8 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetDiffuse(azer::Vector4(0.6f, 0.6f, 0.6f, 1.0f));
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList, indices_num_);
+
+  frustrum_frame_.Render(camera_cull_.GetProjViewMatrix(), renderer);
 }
 
 int main(int argc, char* argv[]) {
