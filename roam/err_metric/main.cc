@@ -21,7 +21,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   MainDelegate()
       : tile_(6, 5.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-      , roam_(&tile_, 1) {
+      , roam_(&tile_, 2) {
   }
   virtual void OnCreate() {}
 

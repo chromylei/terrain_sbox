@@ -58,16 +58,18 @@ void ROAMTree::SplitNode(BiTriTreeNode* pnode) {
   if (pnode->base_neighbor) {
     BiTriTreeNode* bneighbor = pnode->base_neighbor;
     if (bneighbor->left_child) {
-      BiTriTreeNode* blchild = pnode->base_neighbor->left_child;
-      BiTriTreeNode* brchild = pnode->base_neighbor->right_child;
-      blchild->left_neighbor = lchild;
-      brchild->right_neighbor = rchild;
-      lchild->right_neighbor = pnode->base_neighbor->left_child;
-      rchild->left_neighbor = pnode->base_neighbor->right_child;
+      BiTriTreeNode* blchild = bneighbor->left_child;
+      BiTriTreeNode* brchild = bneighbor->right_child;
+      brchild->left_neighbor = lchild;
+      blchild->right_neighbor = rchild;
+      lchild->right_neighbor = bneighbor->right_child;
+      rchild->left_neighbor = bneighbor->left_child;
     } else {
       SplitNode(pnode->base_neighbor);
     }
   } else {
+    lchild->right_neighbor = NULL;
+    rchild->left_neighbor = NULL;
   }
 
   node_num_ += 2;
@@ -114,14 +116,14 @@ int32* ROAMTree::indices(int32* indicesptr) {
 }
 
 void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri) {
+  SplitNode(pnode);
+
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
       || std::abs(tri.apexy - tri.lefty) > kMinWidth) {
     int centx = (tri.leftx + tri.rightx) >> 1;
     int centy = (tri.lefty + tri.righty) >> 1;
     uint8 var = variance(centx, centy);
     if (var < kMinVariance) { return;}
-    
-    SplitNode(pnode);
     Triangle l, r;
     split_triangle(tri, &l, &r);
     RecursSplit(pnode->left_child, l);
