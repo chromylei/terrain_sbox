@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-const int kMinVariance = 16;
+const int kMinVariance = 8;
 
 ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
     : tile_(tile)
