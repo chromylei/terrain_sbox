@@ -15,36 +15,6 @@
  */
 
 class ROAMTree {
- public:
-  ROAMTree(azer::Tile* tile, const int minlevel);
-
-  /**
-   * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
-   * 树结构存在的目的在于
-   * 1. 维持邻居的信息以确保不出现龟裂的情况
-   *
-   */
-  struct BiTriTreeNode {
-    BiTriTreeNode* left_child;
-    BiTriTreeNode* right_child;
-    BiTriTreeNode* base_neighbor;
-    BiTriTreeNode* left_neighbor;
-    BiTriTreeNode* right_neighbor;
-
-    BiTriTreeNode()
-        : left_child(NULL)
-        , right_child(NULL)
-        , base_neighbor(NULL)
-        , left_neighbor(NULL)
-        , right_neighbor(NULL) {
-    }
-  };
-
-
-  void Init();
-  void tessellate();
-  int32* indices(int32* indices);
-  void reset();
  private:
   struct Triangle {
     int leftx;
@@ -61,7 +31,41 @@ class ROAMTree {
         , apexx(ax), apexy(ay) {
     }
   };
+ public:
+  ROAMTree(azer::Tile* tile, const int minlevel);
 
+  /**
+   * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
+   * 树结构存在的目的在于
+   * 1. 维持邻居的信息以确保不出现龟裂的情况
+   *
+   */
+  struct BiTriTreeNode {
+    BiTriTreeNode* left_child;
+    BiTriTreeNode* right_child;
+    BiTriTreeNode* base_neighbor;
+    BiTriTreeNode* left_neighbor;
+    BiTriTreeNode* right_neighbor;
+
+#ifdef _DEBUG
+    Triangle triangle;
+#endif
+
+    BiTriTreeNode()
+        : left_child(NULL)
+        , right_child(NULL)
+        , base_neighbor(NULL)
+        , left_neighbor(NULL)
+        , right_neighbor(NULL) {
+    }
+  };
+
+
+  void Init();
+  void tessellate();
+  int32* indices(int32* indices);
+  void reset();
+ private:
   void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
 
   // 跟据 x, y 获得 vertices 的 index
@@ -75,7 +79,7 @@ class ROAMTree {
    * 递归的分割节点
    */
   void RecursSplit(BiTriTreeNode* node, const Triangle& triangle);
-  void SplitNode(BiTriTreeNode* node);
+  void SplitNode(BiTriTreeNode* node, const Triangle& tri);
 
   BiTriTreeNode* allocate();
   void CalcVariance();
