@@ -135,7 +135,7 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
   UpdatedownCamera(&camera_, camera_speed, delta_time);
   RendererControl(renderer, time);
 
-  camera_cull_.yaw(camera_speed * delta_time);
+  camera_cull_.yaw(camera_speed * delta_time * 0.3);
   camera_cull_.Update();
   frustrum_frame_.Update(camera_cull_);
 

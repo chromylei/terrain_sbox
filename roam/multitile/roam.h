@@ -80,7 +80,11 @@ class ROAMPitch {
    */
   void RecursSplit(BiTriTreeNode* node, const Triangle& triangle,
                    const azer::Camera& camera);
+#ifdef _DEBUG
   void SplitNode(BiTriTreeNode* node, const Triangle& tri);
+#else
+  void SplitNode(BiTriTreeNode* node);
+#endif
 
   BiTriTreeNode* allocate();
   void CalcVariance();

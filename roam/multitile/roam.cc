@@ -19,7 +19,11 @@ ROAMPitch::ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch,
   variance_.reset(new uint8[grid * grid]);
 }
 
+#ifdef _DEBUG
 void ROAMPitch::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
+#else
+void ROAMPitch::SplitNode(BiTriTreeNode* pnode) {
+#endif
   if (pnode->left_child != NULL) return;
   /**
   * for eaxmple, splite top triangle, the bottom triangle must be split twice
@@ -36,7 +40,11 @@ void ROAMPitch::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
   * |/
   */
   if (pnode->base_neighbor && pnode->base_neighbor->base_neighbor != pnode) {
+#ifdef _DEBUG
     SplitNode(pnode->base_neighbor, pnode->base_neighbor->triangle);
+#else
+    SplitNode(pnode->base_neighbor);
+#endif
   }
 
   pnode->left_child = allocate();
@@ -92,7 +100,11 @@ void ROAMPitch::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
       lchild->right_neighbor = bneighbor->right_child;
       rchild->left_neighbor = bneighbor->left_child;
     } else {
+#ifdef _DEBUG
       SplitNode(pnode->base_neighbor, pnode->base_neighbor->triangle);
+#else
+      SplitNode(pnode->base_neighbor);
+#endif
     }
   } else {
     lchild->right_neighbor = NULL;
@@ -147,7 +159,11 @@ int32* ROAMPitch::indices(int32* indicesptr) {
 
 void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
                            const azer::Camera& camera) {
+#ifdef _DEBUG
   SplitNode(pnode, tri);
+#else
+  SplitNode(pnode);
+#endif
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
       || std::abs(tri.apexy - tri.lefty) > kMinWidth) {
     int centx = (tri.leftx + tri.rightx) >> 1;
@@ -179,8 +195,10 @@ void ROAMPitch::tessellate(const azer::Camera& camera) {
   right_root_ = allocate();
   left_root_->base_neighbor = right_root_;
   right_root_->base_neighbor = left_root_;
+#ifdef _DEBUG
   left_root_->triangle = l;
   right_root_->triangle = r;
+#endif
   RecursSplit(left_root_, l, camera);
   RecursSplit(right_root_, r, camera);
 }
