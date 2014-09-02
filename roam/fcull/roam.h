@@ -86,6 +86,8 @@ class ROAMTree {
   void CalcVariance();
   uint8 RecursCalcVariable(const Triangle& triangle, uint8* vararr);
 
+  azer::AxisAlignedBox CalcTriAABB(const Triangle& triangle);
+
   /**
    * 使用数组来表示这个树结构
    */

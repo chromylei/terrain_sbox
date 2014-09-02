@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include "azer/render/render.h"
 
 const int kMinVariance = 8;
 #define SQR(x) ((x) * (x))
@@ -146,7 +147,6 @@ int32* ROAMTree::indices(int32* indicesptr) {
 void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
                            const azer::Camera& camera) {
   SplitNode(pnode, tri);
-
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
       || std::abs(tri.apexy - tri.lefty) > kMinWidth) {
     int centx = (tri.leftx + tri.rightx) >> 1;
@@ -234,7 +234,6 @@ uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {
   uint8 rheight = (uint8)(tile_->vertex(tri.rightx, tri.righty).y);
   uint8 var = std::abs((uint8)height
                             - (((uint8)lheight + (uint8)rheight) >> 1));
-
   Triangle l, r;
   split_triangle(tri, &l, &r);
   if (std::abs(tri.leftx - tri.rightx) > kMinWidth
@@ -246,6 +245,20 @@ uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {
   var = std::max(variance(centx, centy), var);
   set_variance(centx, centy, var);
   return var;
+}
+
+azer::AxisAlignedBox ROAMTree::CalcTriAABB(const Triangle& t) {
+  const azer::Vector3& pos1 = tile_->vertex(t.leftx, t.lefty);
+  const azer::Vector3& pos2 = tile_->vertex(t.rightx, t.righty);
+  const azer::Vector3& pos3 = tile_->vertex(t.apexx, t.apexy);
+  azer::Vector3 min_vert(std::min(std::min(pos1.x, pos2.x), pos3.x),
+                         std::min(std::min(pos1.y, pos2.y), pos3.y),
+                         std::min(std::min(pos1.z, pos2.z), pos3.z));
+  azer::Vector3 max_vert(std::max(std::max(pos1.x, pos2.x), pos3.x),
+                         std::max(std::max(pos1.y, pos2.y), pos3.y),
+                         std::max(std::max(pos1.z, pos2.z), pos3.z));
+  azer::AxisAlignedBox aabb(min_vert, max_vert);
+  return aabb;
 }
 
 ROAMTree::BiTriTreeNode* ROAMTree::allocate() {
