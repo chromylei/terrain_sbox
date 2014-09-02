@@ -18,6 +18,23 @@ ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
 
 void ROAMTree::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
   if (pnode->left_child != NULL) return;
+  /**
+  * for eaxmple, splite top triangle, the bottom triangle must be split twice
+  * the following complete the code
+  *    *
+  *   /|\
+  *  / | \
+  * /__|__\
+  * |     /
+  * |    /
+  * |   /
+  * |  /
+  * | /
+  * |/
+  */
+  if (pnode->base_neighbor && pnode->base_neighbor->base_neighbor != pnode) {
+    SplitNode(pnode->base_neighbor, pnode->base_neighbor->triangle);
+  }
 
   pnode->left_child = allocate();
   pnode->right_child = allocate();
@@ -80,7 +97,7 @@ void ROAMTree::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
   }
 
   if (pnode->base_neighbor) {
-    DCHECK(pnode->base_neighbor == pnode->base_neighbor->base_neighbor);
+    DCHECK(pnode == pnode->base_neighbor->base_neighbor);
   }
   node_num_ += 2;
 }
