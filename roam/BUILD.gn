@@ -6,5 +6,6 @@ group("tersbox_roam") {
     "indices:tersbox_roam_indices",
     "dirlight:tersbox_roam_dirlight",
     "fcull:tersbox_roam_fcull",
+    "err_metric:tersbox_roam_err_metric",
   ]
 }
