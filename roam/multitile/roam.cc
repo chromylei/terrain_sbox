@@ -7,9 +7,10 @@
 const int kMinVariance = 8;
 #define SQR(x) ((x) * (x))
 
-ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
+ROAMPitch::ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch,
+                     const int minlevel)
     : tile_(tile)
-    , pitch_(0, 0, tile->GetGridLineNum() - 1, tile->GetGridLineNum() - 1)
+    , pitch_(pitch)
     , left_root_(NULL)
     , right_root_(NULL)
     , node_num_(0)
@@ -18,7 +19,7 @@ ROAMTree::ROAMTree(azer::Tile* tile, const int minlevel)
   variance_.reset(new uint8[grid * grid]);
 }
 
-void ROAMTree::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
+void ROAMPitch::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
   if (pnode->left_child != NULL) return;
   /**
   * for eaxmple, splite top triangle, the bottom triangle must be split twice
@@ -104,7 +105,7 @@ void ROAMTree::SplitNode(BiTriTreeNode* pnode, const Triangle& tri) {
   node_num_ += 2;
 }
 
-void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
+void ROAMPitch::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
   int centx = (tri.leftx + tri.rightx) >> 1;
   int centy = (tri.lefty + tri.righty) >> 1;
   l->leftx  = tri.apexx; l->lefty  = tri.apexy;
@@ -116,7 +117,7 @@ void ROAMTree::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
   r->apexx  = centx; r->apexy  = centy;
 }
 
-int32* ROAMTree::indices(BiTriTreeNode* node, const Triangle& tri,
+int32* ROAMPitch::indices(BiTriTreeNode* node, const Triangle& tri,
                          int32* indices_ptr) {
   int32* cur = indices_ptr;
   if (node->left_child) {
@@ -133,18 +134,18 @@ int32* ROAMTree::indices(BiTriTreeNode* node, const Triangle& tri,
   }
 }
 
-int32* ROAMTree::indices(int32* indicesptr) {
-  ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
+int32* ROAMPitch::indices(int32* indicesptr) {
+  ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
-  ROAMTree::Triangle r(pitch_.right, pitch_.top,
+  ROAMPitch::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
   int32* cur = indices(left_root_, l, indicesptr);
   return indices(right_root_, r, cur);
 }
 
-void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
+void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
                            const azer::Camera& camera) {
   SplitNode(pnode, tri);
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
@@ -166,11 +167,11 @@ void ROAMTree::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
   }
 }
 
-void ROAMTree::tessellate(const azer::Camera& camera) {
-  ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
+void ROAMPitch::tessellate(const azer::Camera& camera) {
+  ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
-  ROAMTree::Triangle r(pitch_.right, pitch_.top,
+  ROAMPitch::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
   reset();
@@ -184,17 +185,17 @@ void ROAMTree::tessellate(const azer::Camera& camera) {
   RecursSplit(right_root_, r, camera);
 }
 
-void ROAMTree::Init() {
-  ROAMTree::CalcVariance();
+void ROAMPitch::Init() {
+  ROAMPitch::CalcVariance();
 }
 
-void ROAMTree::CalcVariance() {
+void ROAMPitch::CalcVariance() {
   int grid = tile_->GetGridLineNum() + 1;
   memset(variance_.get(), 0, grid * grid * sizeof(uint8));
-  ROAMTree::Triangle l(pitch_.left, pitch_.bottom,
+  ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
-  ROAMTree::Triangle r(pitch_.right, pitch_.top,
+  ROAMPitch::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
   RecursCalcVariable(l, variance_.get());
@@ -212,21 +213,21 @@ void ROAMTree::CalcVariance() {
   */
 }
 
-void ROAMTree::set_variance(int x, int y, uint8 var) {
+void ROAMPitch::set_variance(int x, int y, uint8 var) {
   int grid = tile_->GetGridLineNum() + 1;
   int index = y * grid + x;
   DCHECK_LT(index, grid * grid);
   variance_.get()[index] = var;
 }
 
-uint8 ROAMTree::variance(int x, int y) {
+uint8 ROAMPitch::variance(int x, int y) {
   int grid = tile_->GetGridLineNum() + 1;
   int index = y * grid + x;
   DCHECK_LT(index, grid * grid);
   return variance_.get()[index];
 }
 
-uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {  
+uint8 ROAMPitch::RecursCalcVariable(const Triangle& tri, uint8* vararr) {  
   int centx = (tri.leftx + tri.rightx) >> 1;
   int centy = (tri.lefty + tri.righty) >> 1;
   uint8 height = (uint8)(tile_->vertex(centx, centy).y);
@@ -247,7 +248,7 @@ uint8 ROAMTree::RecursCalcVariable(const Triangle& tri, uint8* vararr) {
   return var;
 }
 
-azer::AxisAlignedBox ROAMTree::CalcTriAABB(const Triangle& t) {
+azer::AxisAlignedBox ROAMPitch::CalcTriAABB(const Triangle& t) {
   const azer::Vector3& pos1 = tile_->vertex(t.leftx, t.lefty);
   const azer::Vector3& pos2 = tile_->vertex(t.rightx, t.righty);
   const azer::Vector3& pos3 = tile_->vertex(t.apexx, t.apexy);
@@ -261,11 +262,11 @@ azer::AxisAlignedBox ROAMTree::CalcTriAABB(const Triangle& t) {
   return aabb;
 }
 
-ROAMTree::BiTriTreeNode* ROAMTree::allocate() {
+ROAMPitch::BiTriTreeNode* ROAMPitch::allocate() {
   return arena_.allocate();
 }
 
-ROAMTree::BiTriTreeNode* ROAMTree::Arena::allocate() {
+ROAMPitch::BiTriTreeNode* ROAMPitch::Arena::allocate() {
   if (vec_index_ < block_.size()) {
     if (node_num_ < kBlockSize) {
       BiTriTreeNodeVec& vec = *block_[vec_index_];
@@ -281,7 +282,7 @@ ROAMTree::BiTriTreeNode* ROAMTree::Arena::allocate() {
   }
 }
 
-void ROAMTree::Arena::reset() {
+void ROAMPitch::Arena::reset() {
   vec_index_ = 0;
   node_num_ = 0;
 }

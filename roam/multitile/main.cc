@@ -20,9 +20,12 @@ using base::FilePath;
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate()
-      : tile_(4, 2.0f)
+      : tile_(8, 2.0f)
       , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-      , roam_(&tile_, 2) {
+      , roam_(&tile_,
+              azer::Tile::Pitch(0, 0, tile_.GetGridLineNum() - 1,
+                                tile_.GetGridLineNum() - 1),
+              2) {
   }
   virtual void OnCreate() {}
 
@@ -41,7 +44,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::unique_ptr<DirlightEffect> effect_;
   DirlightEffect::DirLight light_;
   RawHeightmap heightmap_;
-  ROAMTree roam_;
+  ROAMPitch roam_;
   int32 indices_num_;
 
   azer::Camera camera_cull_;
@@ -58,7 +61,7 @@ void MainDelegate::Init() {
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
   camera_.frustrum().set_far(4000.0f);
-  camera_.SetPosition(azer::Vector3(0.0f, 600.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 800.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 

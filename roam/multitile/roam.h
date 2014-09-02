@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 
 /**
- * ROAMTree 分割 三角形 并生成 indices
+ * ROAMPitch 分割 三角形 并生成 indices
  * 潜在的问题是，由于直接生成了 indices 而 normal 没有重新计算，因此所有的 normal 
  * 都是错误的。
  * 这个问题的重要程度需要评估，因为 error metric 会保证近处的 pitch 会被尽量分割
@@ -14,7 +14,7 @@
  *
  */
 
-class ROAMTree {
+class ROAMPitch {
  private:
   struct Triangle {
     int leftx;
@@ -32,8 +32,8 @@ class ROAMTree {
     }
   };
  public:
-  ROAMTree(azer::Tile* tile, const int minlevel);
-
+  ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch, const int minlevel);
+  
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
    * 树结构存在的目的在于
@@ -116,16 +116,16 @@ class ROAMTree {
   std::unique_ptr<uint8[]> variance_;
   int node_num_;
   const int kMinWidth;
-  DISALLOW_COPY_AND_ASSIGN(ROAMTree);
+  DISALLOW_COPY_AND_ASSIGN(ROAMPitch);
 };
 
-inline void ROAMTree::reset() {
+inline void ROAMPitch::reset() {
   left_root_ = NULL;
   right_root_ = NULL;
   arena_.reset();
 }
 
-inline int32 ROAMTree::get_index(int x, int y) {
+inline int32 ROAMPitch::get_index(int x, int y) {
   int index = y * tile_->GetGridLineNum() + x;
   return index;
 }
