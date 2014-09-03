@@ -9,11 +9,7 @@ using base::FilePath;
 
 Terrain::Terrain()
     : tile_(8, 2.0f)
-    , heightmap_(FilePath(HEIGHTMAP_PATH), 1024)
-    , roam_(&tile_,
-            azer::Tile::Pitch(0, 0, tile_.GetGridLineNum() - 1,
-                              tile_.GetGridLineNum() - 1),
-            2) {
+    , heightmap_(FilePath(HEIGHTMAP_PATH), 1024) {
 }
 
 void Terrain::Init(azer::RenderSystem* rs) {
@@ -26,7 +22,11 @@ void Terrain::Init(azer::RenderSystem* rs) {
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
 
-  roam_.Init();
+  azer::Tile::Pitch pitch(0, 0, tile_.GetGridLineNum() - 1,
+                          tile_.GetGridLineNum() - 1);
+  ROAMPitchPtr ptr(new ROAMPitch(&tile_, pitch, 2));
+  ptr->Init();
+  roam_.push_back(ptr);
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -73,9 +73,15 @@ void Terrain::InitPhysicsBuffer(azer::RenderSystem* rs) {
 }
 
 void Terrain::OnUpdateScene(const azer::Camera& camera) {
-  roam_.tessellate(camera);
-  int32 * end = roam_.indices((int32*)idata_ptr_->pointer());
-  indices_num_ = end - (int32*)idata_ptr_->pointer();
+
+  int32* beg = (int32*)idata_ptr_->pointer();
+  int32* cur = beg;
+  for (int i = 0; i < roam_.size(); ++i) {
+    ROAMPitchPtr& ptr = roam_[i];
+    ptr->tessellate(camera);
+    cur = ptr->indices(cur);
+  }
+  indices_num_ = cur - (int32*)idata_ptr_->pointer();
   azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
   memcpy(data->data_ptr(), idata_ptr_->pointer(), indices_num_ * sizeof(int32));
   ib_->unmap();
