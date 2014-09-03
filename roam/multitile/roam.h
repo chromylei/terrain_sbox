@@ -46,7 +46,6 @@ class ROAMPitch {
     BiTriTreeNode* base_neighbor;
     BiTriTreeNode* left_neighbor;
     BiTriTreeNode* right_neighbor;
-
 #ifdef _DEBUG
     Triangle triangle;
 #endif
@@ -65,6 +64,11 @@ class ROAMPitch {
   void tessellate(const azer::Camera& camera);
   int32* indices(int32* indices);
   void reset();
+
+  const azer::Tile::Pitch& pitch() const { return pitch_;}
+
+  void SetLeftNeighbor(ROAMPitch* pitch);
+  void SetRightNeighbor(ROAMPitch* pitch);
  private:
   void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
 
@@ -89,6 +93,7 @@ class ROAMPitch {
   BiTriTreeNode* allocate();
   void CalcVariance();
   uint8 RecursCalcVariable(const Triangle& triangle, uint8* vararr);
+  bool IsTriangleVisible(const azer::Camera& camera, const Triangle& tri);
 
   azer::AxisAlignedBox CalcTriAABB(const Triangle& triangle);
 
@@ -115,17 +120,14 @@ class ROAMPitch {
   Arena arena_;
   azer::Tile* tile_;
   const azer::Tile::Pitch pitch_;
-  BiTriTreeNode *left_root_;
-  BiTriTreeNode *right_root_;
+  BiTriTreeNode left_root_;
+  BiTriTreeNode right_root_;
   std::unique_ptr<uint8[]> variance_;
-  int node_num_;
   const int kMinWidth;
   DISALLOW_COPY_AND_ASSIGN(ROAMPitch);
 };
 
 inline void ROAMPitch::reset() {
-  left_root_ = NULL;
-  right_root_ = NULL;
   arena_.reset();
 }
 

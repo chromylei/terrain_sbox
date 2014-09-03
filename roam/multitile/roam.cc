@@ -11,9 +11,6 @@ ROAMPitch::ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch,
                      const int minlevel)
     : tile_(tile)
     , pitch_(pitch)
-    , left_root_(NULL)
-    , right_root_(NULL)
-    , node_num_(0)
     , kMinWidth(1 << minlevel) {
   int grid = tile->GetGridLineNum() + 1;
   variance_.reset(new uint8[grid * grid]);
@@ -112,9 +109,11 @@ void ROAMPitch::SplitNode(BiTriTreeNode* pnode) {
   }
 
   if (pnode->base_neighbor) {
-    DCHECK(pnode == pnode->base_neighbor->base_neighbor);
+    // DCHECK(pnode == pnode->base_neighbor->base_neighbor);
+    if (pnode != pnode->base_neighbor->base_neighbor) {
+      LOG(ERROR) << "ERROR";
+    }
   }
-  node_num_ += 2;
 }
 
 void ROAMPitch::split_triangle(const Triangle& tri, Triangle* l, Triangle* r) {
@@ -153,8 +152,8 @@ int32* ROAMPitch::indices(int32* indicesptr) {
   ROAMPitch::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
-  int32* cur = indices(left_root_, l, indicesptr);
-  return indices(right_root_, r, cur);
+  int32* cur = indices(&left_root_, l, indicesptr);
+  return indices(&right_root_, r, cur);
 }
 
 void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
@@ -164,6 +163,7 @@ void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
 #else
   SplitNode(pnode);
 #endif
+
   if (std::abs(tri.apexx - tri.leftx) > kMinWidth
       || std::abs(tri.apexy - tri.lefty) > kMinWidth) {
     int centx = (tri.leftx + tri.rightx) >> 1;
@@ -184,27 +184,37 @@ void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
 }
 
 void ROAMPitch::tessellate(const azer::Camera& camera) {
+  reset();
+
+  CalcVariance();
+
   ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
   ROAMPitch::Triangle r(pitch_.right, pitch_.top,
                        pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.bottom);
-  reset();
-  left_root_ = allocate();
-  right_root_ = allocate();
-  left_root_->base_neighbor = right_root_;
-  right_root_->base_neighbor = left_root_;
-#ifdef _DEBUG
-  left_root_->triangle = l;
-  right_root_->triangle = r;
-#endif
-  RecursSplit(left_root_, l, camera);
-  RecursSplit(right_root_, r, camera);
+
+  RecursSplit(&left_root_, l, camera);
+  RecursSplit(&right_root_, r, camera);
 }
 
 void ROAMPitch::Init() {
   ROAMPitch::CalcVariance();
+
+  ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.top);
+  ROAMPitch::Triangle r(pitch_.right, pitch_.top,
+                       pitch_.left, pitch_.bottom,
+                       pitch_.right, pitch_.bottom);
+
+  left_root_.base_neighbor = &right_root_;
+  right_root_.base_neighbor = &left_root_;
+#ifdef _DEBUG
+  left_root_.triangle = l;
+  right_root_.triangle = r;
+#endif
 }
 
 void ROAMPitch::CalcVariance() {
