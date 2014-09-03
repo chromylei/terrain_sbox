@@ -13,10 +13,17 @@ class LandScape {
 
   void update(const Camera& camera);
   int32* indices(int32* indices);
+
+  void SetROAMPitch(int row, int col, ROAMPitchPtr ptr);
  private:
   static const int kPagePerRow = 4;
-  ROAMPitch* page_[kPagePerRow * kPagePerRow];
+  ROAMPitchPtr page_[kPagePerRow * kPagePerRow];
   int visible_page_[kPagePerRow * kPagePerRow];
   int visible_num_;
   DISALLOW_COPY_AND_ASSIGN(LandScape);
 };
+
+inline void LandScape::SetROAMPitch(int row, int col, ROAMPitchPtr ptr) {
+  int index = kPagePerRow * row + col;
+  page_[index] = ptr;
+}

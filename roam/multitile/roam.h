@@ -67,8 +67,19 @@ class ROAMPitch {
 
   const azer::Tile::Pitch& pitch() const { return pitch_;}
 
+  /**
+   * left, right, top, bottom neighbor 描述的是一个 ROAMPitch 二维数组
+   * 当中， ROAMPitch 的相互关系， 与 ROAM 的
+   * left_neighbor, right_neighbor, base_neighbor 描述的是不同类的东西
+   *
+   * 注意：其中的 SetRightNeighbor 和 SetBottomNeighbor 不会使用
+   * 原因与二维数组通常的遍历顺序相关
+   */
+  
   void SetLeftNeighbor(ROAMPitch* pitch);
-  void SetRightNeighbor(ROAMPitch* pitch);
+  // void SetRightNeighbor(ROAMPitch* pitch);
+  void SetTopNeighbor(ROAMPitch* pitch);
+  // void SetBottomNeighbor(ROAMPitch* pitch);
  private:
   void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
 
@@ -127,11 +138,27 @@ class ROAMPitch {
   DISALLOW_COPY_AND_ASSIGN(ROAMPitch);
 };
 
+typedef std::shared_ptr<ROAMPitch> ROAMPitchPtr;
+
 inline void ROAMPitch::reset() {
+  left_root_.left_neighbor = NULL;
+  left_root_.right_neighbor = NULL;
+  right_root_.left_neighbor = NULL;
+  right_root_.right_neighbor = NULL;
   arena_.reset();
 }
 
 inline int32 ROAMPitch::get_index(int x, int y) {
   int index = y * tile_->GetGridLineNum() + x;
   return index;
+}
+
+inline void ROAMPitch::SetLeftNeighbor(ROAMPitch* pitch) {
+  right_root_.left_neighbor = &pitch->right_root_;
+  pitch->right_root_.left_neighbor = &right_root_;
+}
+
+inline void ROAMPitch::SetTopNeighbor(ROAMPitch* pitch) {
+  pitch->right_root_.right_neighbor = &left_root_;
+  left_root_.right_neighbor = &pitch->right_root_;
 }
