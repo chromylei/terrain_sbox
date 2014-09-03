@@ -22,11 +22,15 @@ void Terrain::Init(azer::RenderSystem* rs) {
   CHECK(heightmap_.Load());
   InitPhysicsBuffer(rs);
 
-  azer::Tile::Pitch pitch(0, 0, tile_.GetGridLineNum() - 1,
-                          tile_.GetGridLineNum() - 1);
-  ROAMPitchPtr ptr(new ROAMPitch(&tile_, pitch, 2));
-  ptr->Init();
-  roam_.push_back(ptr);
+  const int kcell = 32;
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 8; ++j) {
+      azer::Tile::Pitch pitch(i * 32, j * 32, (i + 1) * 32, (j + 1) * 32);
+      ROAMPitchPtr ptr(new ROAMPitch(&tile_, pitch, 2));
+      ptr->Init();
+      roam_.push_back(ptr);
+    }
+  }
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
