@@ -23,12 +23,13 @@ void Terrain::Init(azer::RenderSystem* rs) {
   InitPhysicsBuffer(rs);
 
   const int kcell = 32;
-  for (int i = 0; i < 8; ++i) {
-    for (int j = 0; j < 8; ++j) {
-      azer::Tile::Pitch pitch(i * 32, j * 32, (i + 1) * 32, (j + 1) * 32);
+  for (int row = 0; row < 8; ++row) {
+    for (int col = 0; col < 8; ++col) {
+      azer::Tile::Pitch pitch(col * 32, row * 32, (col + 1) * 32, (row + 1) * 32);
       ROAMPitchPtr ptr(new ROAMPitch(&tile_, pitch, 2));
       ptr->Init();
       roam_.push_back(ptr);
+      landscape_.SetROAMPitch(row, col, ptr);
     }
   }
 
@@ -77,14 +78,16 @@ void Terrain::InitPhysicsBuffer(azer::RenderSystem* rs) {
 }
 
 void Terrain::OnUpdateScene(const azer::Camera& camera) {
-
+  landscape_.update(camera);
   int32* beg = (int32*)idata_ptr_->pointer();
-  int32* cur = beg;
+  int32* cur = landscape_.indices(beg);
+  /*
   for (int i = 0; i < roam_.size(); ++i) {
     ROAMPitchPtr& ptr = roam_[i];
     ptr->tessellate(camera);
     cur = ptr->indices(cur);
   }
+  */
   indices_num_ = cur - (int32*)idata_ptr_->pointer();
   azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
   memcpy(data->data_ptr(), idata_ptr_->pointer(), indices_num_ * sizeof(int32));

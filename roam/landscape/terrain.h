@@ -23,6 +23,7 @@ class Terrain {
   std::unique_ptr<DirlightEffect> effect_;
   DirlightEffect::DirLight light_;
   RawHeightmap heightmap_;
+  LandScape landscape_;
   std::vector<ROAMPitchPtr> roam_;
   int32 indices_num_;
   DISALLOW_COPY_AND_ASSIGN(Terrain);
