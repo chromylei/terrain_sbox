@@ -2,6 +2,7 @@
 
 #include "tersbox/roam/landscape/roam.h"
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "azer/render/render.h"
 
 class LandScape {
@@ -24,6 +25,8 @@ class LandScape {
 };
 
 inline void LandScape::SetROAMPitch(int row, int col, ROAMPitchPtr ptr) {
+  DCHECK_LT(row, kPagePerRow);
+  DCHECK_LT(col, kPagePerRow);
   int index = kPagePerRow * row + col;
   page_[index] = ptr;
 }
