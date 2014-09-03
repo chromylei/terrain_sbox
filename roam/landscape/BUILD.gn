@@ -7,7 +7,14 @@ afx("tersbox_roam_landscape_effect") {
 
 
 executable("tersbox_roam_landscape") {
-  sources = ["main.cc", "roam.cc", "roam.h"]
+  sources = ["main.cc",
+             "roam.cc",
+             "roam.h",
+             "landscape.cc",
+             "landscape.h",
+             "terrain.cc",
+             "terrain.h"
+             ]
   deps = ["//tersbox/base:tersbox_base",
           "//azer/render:render",
           "//base:appinit",

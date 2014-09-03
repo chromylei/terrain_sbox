@@ -7,11 +7,11 @@
 class LandScape {
  public:
   LandScape() {
-    memset(page_, 0, sizeof(page));
+    memset(page_, 0, sizeof(page_));
     visible_num_ = 0;
   }
 
-  void update(const Camera& camera);
+  void update(const azer::Camera& camera);
   int32* indices(int32* indices);
 
   void SetROAMPitch(int row, int col, ROAMPitchPtr ptr);

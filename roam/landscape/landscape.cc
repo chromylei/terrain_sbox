@@ -1,6 +1,6 @@
-#include "tersbox/roam/landscape/roam.h"
+#include "tersbox/roam/landscape/landscape.h"
 
-void LandScape::update(const Camera& camera) {
+void LandScape::update(const azer::Camera& camera) {
   visible_num_ = 0;
 
   int cnt = 0;
@@ -8,19 +8,19 @@ void LandScape::update(const Camera& camera) {
     for (int j = 0; j < kPagePerRow; ++j) {
       int index = i * kPagePerRow +j;
       if (j > 0) {
-        page_[index]->SetLeftNeighbor(page_[index - 1]);
+        page_[index]->SetLeftNeighbor(page_[index - 1].get());
       }
       if (i > 0) {
-        page_[index]->SetTopNeighbor(page_[index - kPagePerRow]);
+        page_[index]->SetTopNeighbor(page_[index - kPagePerRow].get());
       }
-      page_[cnt] = cnt;
+      visible_page_[cnt] = cnt;
       cnt++;
       visible_num_++;
     }
   }
 
   for (int i = 0; i < visible_num_; ++i) {
-    page_[visible_page_[i]]->tesselate(camera);
+    page_[visible_page_[i]]->tessellate(camera);
   }
 }
 
@@ -31,3 +31,4 @@ int32* LandScape::indices(int32* indicesptr) {
   }
   return cur;
 }
+
