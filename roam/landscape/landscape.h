@@ -16,7 +16,7 @@ class LandScape {
 
   void SetROAMPitch(int row, int col, ROAMPitchPtr ptr);
  private:
-  static const int kPagePerRow = 4;
+  static const int kPagePerRow = 8;
   ROAMPitchPtr page_[kPagePerRow * kPagePerRow];
   int visible_page_[kPagePerRow * kPagePerRow];
   int visible_num_;
