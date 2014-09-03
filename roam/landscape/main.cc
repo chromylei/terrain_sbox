@@ -7,12 +7,12 @@
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/frustrum_frame.h"
 #include "tersbox/base/rawdata.h"
-#include "tersbox/roam/multitile/roam.h"
+#include "tersbox/roam/landscape/roam.h"
 
 #include <tchar.h>
 
 #include "dirlight.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/multitile/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/roam/landscape/"
 #define SHADER_NAME "dirlight.afx"
 #define HEIGHTMAP_PATH FILE_PATH_LITERAL("tersbox/roam/data/height1024.raw")
 using base::FilePath;

@@ -1,16 +1,16 @@
 import("//build/templates/afx.gni")
 
-afx("tersbox_roam_multitile_effect") {
+afx("tersbox_roam_landscape_effect") {
   source = "dirlight.afx"
   filename = "dirlight"
 }
 
 
-executable("tersbox_roam_multitile") {
+executable("tersbox_roam_landscape") {
   sources = ["main.cc", "roam.cc", "roam.h"]
   deps = ["//tersbox/base:tersbox_base",
           "//azer/render:render",
           "//base:appinit",
-          ":tersbox_roam_multitile_effect",
+          ":tersbox_roam_landscape_effect",
          ]
 }
