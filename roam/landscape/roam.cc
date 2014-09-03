@@ -186,8 +186,6 @@ void ROAMPitch::RecursSplit(BiTriTreeNode* pnode, const Triangle& tri,
 void ROAMPitch::tessellate(const azer::Camera& camera) {
   reset();
 
-  CalcVariance();
-
   ROAMPitch::Triangle l(pitch_.left, pitch_.bottom,
                        pitch_.right, pitch_.top,
                        pitch_.left, pitch_.top);
