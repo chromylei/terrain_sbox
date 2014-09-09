@@ -197,8 +197,8 @@ void ROAMPitch::tessellate(const azer::Camera& camera) {
 }
 
 bool ROAMPitch::IsVisible(const azer::Camera& camera) {
-  // azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckWithoutHeight;
-  azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckAll;
+  azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckWithoutHeight;
+  // azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckAll;
   const azer::Vector3& p1 = tile_->vertex(pitch_.left, pitch_.top);
   const azer::Vector3& p2 = tile_->vertex(pitch_.right, pitch_.top);
   const azer::Vector3& p3 = tile_->vertex(pitch_.left, pitch_.bottom);
