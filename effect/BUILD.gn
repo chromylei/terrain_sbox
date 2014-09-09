@@ -1,3 +1,6 @@
 group("tersbox_effect") {
-  deps = ["common:tersbox_effect_common"]
+  deps = [
+    "common:tersbox_effect_common",
+    "cube:tersbox_effect_cube",
+  ]
 }
