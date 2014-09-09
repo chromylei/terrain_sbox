@@ -11,15 +11,19 @@ void LandScape::update(const azer::Camera& camera) {
   for (int row = 0; row < kPagePerRow; ++row) {
     for (int col = 0; col < kPagePerRow; ++col) {
       int index = row * kPagePerRow + col;
+      ROAMPitchPtr& ptr = page_[index];
+      if (ptr->IsVisible(camera)) {
+        continue;
+      }
       if (col > 0) {
-        ROAMPitchPtr neighbor = page_[index - 1];
+        ROAMPitchPtr& neighbor = page_[index - 1];
         DCHECK(neighbor.get() != NULL);
-        page_[index]->SetLeftNeighbor(neighbor.get());
+        ptr->SetLeftNeighbor(neighbor.get());
       }
       if (row > 0) {
-        ROAMPitchPtr neighbor = page_[index - kPagePerRow];
+        ROAMPitchPtr& neighbor = page_[index - kPagePerRow];
         DCHECK(neighbor.get() != NULL);
-        page_[index]->SetTopNeighbor(neighbor.get());
+        ptr->SetTopNeighbor(neighbor.get());
       }
       visible_page_[cnt] = cnt;
       cnt++;

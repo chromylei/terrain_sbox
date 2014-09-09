@@ -208,9 +208,9 @@ bool ROAMPitch::IsVisible(const azer::Camera& camera) {
   azer::VisibleState v3 = camera.frustrum().IsVisible(p3, opt);
   azer::VisibleState v4 = camera.frustrum().IsVisible(p4, opt);
   return v1 == azer::kFullyVisible
-      && v2 == azer::kFullyVisible
-      && v3 == azer::kFullyVisible
-      && v4 == azer::kFullyVisible;
+      || v2 == azer::kFullyVisible
+      || v3 == azer::kFullyVisible
+      || v4 == azer::kFullyVisible;
 }
 
 void ROAMPitch::Init() {
