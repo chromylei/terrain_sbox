@@ -31,9 +31,7 @@ class ROAMPitch {
         , apexx(ax), apexy(ay) {
     }
   };
- public:
-  ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch, const int minlevel);
-  
+
   /**
    * 如果单纯的使用 ROAM 算法进行分割是非常简单的，甚至不需要位置树结构
    * 树结构存在的目的在于
@@ -58,6 +56,26 @@ class ROAMPitch {
         , right_neighbor(NULL) {
     }
   };
+
+  /**
+   * 使用数组来表示这个树结构
+   */
+  class Arena {
+   public:
+    Arena() : vec_index_(0), node_num_(0) {}
+    BiTriTreeNode* allocate();
+    void reset();
+   private:
+    typedef std::vector<BiTriTreeNode> BiTriTreeNodeVec;
+    typedef std::vector<BiTriTreeNodeVec*> NodeBlockList;
+    int vec_index_;
+    int node_num_;
+    NodeBlockList block_;
+    static const int kBlockSize = 20480;
+    DISALLOW_COPY_AND_ASSIGN(Arena);
+  };
+ public:
+  ROAMPitch(azer::Tile* tile, azer::Tile::Pitch& pitch, const int minlevel);
 
 
   void Init();
@@ -108,24 +126,6 @@ class ROAMPitch {
 
   azer::AxisAlignedBox CalcTriAABB(const Triangle& triangle);
 
-  /**
-   * 使用数组来表示这个树结构
-   */
-  class Arena {
-   public:
-    Arena() : vec_index_(0), node_num_(0) {}
-    BiTriTreeNode* allocate();
-    void reset();
-   private:
-    typedef std::vector<BiTriTreeNode> BiTriTreeNodeVec;
-    typedef std::vector<BiTriTreeNodeVec*> NodeBlockList;
-    int vec_index_;
-    int node_num_;
-    NodeBlockList block_;
-    static const int kBlockSize = 20480;
-    DISALLOW_COPY_AND_ASSIGN(Arena);
-  };
-
   void set_variance(int x, int y, uint8 var);
   uint8 variance(int x, int y);
   Arena arena_;
@@ -141,10 +141,6 @@ class ROAMPitch {
 typedef std::shared_ptr<ROAMPitch> ROAMPitchPtr;
 
 inline void ROAMPitch::reset() {
-  left_root_.left_neighbor = NULL;
-  left_root_.right_neighbor = NULL;
-  right_root_.left_neighbor = NULL;
-  right_root_.right_neighbor = NULL;
   arena_.reset();
 }
 
