@@ -38,6 +38,7 @@ class ROAMPitch {
    * 1. 维持邻居的信息以确保不出现龟裂的情况
    *
    */
+  class Arena;
   struct BiTriTreeNode {
     BiTriTreeNode* left_child;
     BiTriTreeNode* right_child;
@@ -63,6 +64,7 @@ class ROAMPitch {
   class Arena {
    public:
     Arena() : vec_index_(0), node_num_(0) {}
+    ~Arena();
     BiTriTreeNode* allocate();
     void reset();
    private:

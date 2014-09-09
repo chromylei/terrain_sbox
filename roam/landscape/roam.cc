@@ -288,8 +288,16 @@ azer::AxisAlignedBox ROAMPitch::CalcTriAABB(const Triangle& t) {
   return aabb;
 }
 
+ROAMPitch::Arena::~Arena() {
+  for (auto iter = block_.begin(); iter != block_.end(); ++iter) {
+    delete *iter;
+  }
+}
+
 ROAMPitch::BiTriTreeNode* ROAMPitch::allocate() {
-  return arena_.allocate();
+  BiTriTreeNode* node = arena_.allocate();
+  // memset(node, 0, sizeof(BiTriTreeNode));
+  return node;
 }
 
 ROAMPitch::BiTriTreeNode* ROAMPitch::Arena::allocate() {
@@ -311,4 +319,12 @@ ROAMPitch::BiTriTreeNode* ROAMPitch::Arena::allocate() {
 void ROAMPitch::Arena::reset() {
   vec_index_ = 0;
   node_num_ = 0;
+
+  
+  for (auto iter = block_.begin(); iter != block_.end(); ++iter) {
+    // BiTriTreeNodeVec& vec = *(*iter);
+    // for (auto viter = vec.begin(); viter != vec.end();  viter++) {
+    // }
+    // memset(&(vec[0]), 0, vec.size() * sizeof(BiTriTreeNode));
+  }
 }
