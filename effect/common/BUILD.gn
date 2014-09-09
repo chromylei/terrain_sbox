@@ -1,0 +1,10 @@
+
+static_library("tersbox_effect_common") {
+  sources = ["load.cc",
+             "load.h",
+            ]
+  deps = ["//tersbox/base:tersbox_base",
+          "//azer/render:render",
+          "//base:base",
+          ]
+}

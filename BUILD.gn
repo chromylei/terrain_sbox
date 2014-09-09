@@ -4,5 +4,6 @@ group("tersbox") {
     "fter:tersbox_fter",
     "clod:tersbox_clod",
     "roam:tersbox_roam",
+    "effect:tersbox_effect",
   ]
 }

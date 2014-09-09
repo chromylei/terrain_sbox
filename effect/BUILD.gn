@@ -1,0 +1,3 @@
+group("tersbox_effect") {
+  deps = ["common:tersbox_effect_common"]
+}
