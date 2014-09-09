@@ -39,7 +39,8 @@ void MainDelegate::Init() {
   renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
   camera_.frustrum().set_far(4000.0f);
-  camera_.SetPosition(azer::Vector3(0.0f, 800.0f, 0.0f));
+  // camera_.SetPosition(azer::Vector3(0.0f, 800.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 400.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
   camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 

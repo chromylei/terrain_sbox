@@ -7,7 +7,7 @@ void LandScape::update(const azer::Camera& camera) {
   int cnt = 0;
   for (int row = 0; row < kPagePerRow; ++row) {
     for (int col = 0; col < kPagePerRow; ++col) {
-      int index = row * kPagePerRow +col;
+      int index = row * kPagePerRow + col;
       if (col > 0) {
         ROAMPitchPtr ptr = page_[index - 1];
         DCHECK(ptr.get() != NULL);
@@ -24,7 +24,8 @@ void LandScape::update(const azer::Camera& camera) {
   }
 
   for (int i = 0; i < visible_num_; ++i) {
-    page_[visible_page_[i]]->tessellate(camera);
+    int index = visible_page_[i];
+    page_[index]->tessellate(camera);
   }
 }
 

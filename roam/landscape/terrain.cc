@@ -81,13 +81,6 @@ void Terrain::OnUpdateScene(const azer::Camera& camera) {
   landscape_.update(camera);
   int32* beg = (int32*)idata_ptr_->pointer();
   int32* cur = landscape_.indices(beg);
-  /*
-  for (int i = 0; i < roam_.size(); ++i) {
-    ROAMPitchPtr& ptr = roam_[i];
-    ptr->tessellate(camera);
-    cur = ptr->indices(cur);
-  }
-  */
   indices_num_ = cur - (int32*)idata_ptr_->pointer();
   azer::HardwareBufferDataPtr data(ib_->map(azer::kWriteDiscard));
   memcpy(data->data_ptr(), idata_ptr_->pointer(), indices_num_ * sizeof(int32));

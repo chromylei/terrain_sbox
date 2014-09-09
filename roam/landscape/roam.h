@@ -154,11 +154,11 @@ inline int32 ROAMPitch::get_index(int x, int y) {
 }
 
 inline void ROAMPitch::SetLeftNeighbor(ROAMPitch* pitch) {
-  right_root_.left_neighbor = &pitch->right_root_;
-  pitch->right_root_.left_neighbor = &right_root_;
+  left_root_.left_neighbor = &pitch->right_root_;
+  pitch->right_root_.left_neighbor = &left_root_;
 }
 
 inline void ROAMPitch::SetTopNeighbor(ROAMPitch* pitch) {
-  pitch->right_root_.right_neighbor = &left_root_;
   left_root_.right_neighbor = &pitch->right_root_;
+  pitch->right_root_.right_neighbor = &left_root_;
 }
