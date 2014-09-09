@@ -1,5 +1,8 @@
 #include "tersbox/roam/landscape/landscape.h"
+
+
 #include "base/logging.h"
+#include "azer/render/render.h"
 
 void LandScape::update(const azer::Camera& camera) {
   visible_num_ = 0;
@@ -9,13 +12,14 @@ void LandScape::update(const azer::Camera& camera) {
     for (int col = 0; col < kPagePerRow; ++col) {
       int index = row * kPagePerRow + col;
       if (col > 0) {
-        ROAMPitchPtr ptr = page_[index - 1];
-        DCHECK(ptr.get() != NULL);
-        page_[index]->SetLeftNeighbor(ptr.get());
+        ROAMPitchPtr neighbor = page_[index - 1];
+        DCHECK(neighbor.get() != NULL);
+        page_[index]->SetLeftNeighbor(neighbor.get());
       }
       if (row > 0) {
-        ROAMPitchPtr ptr = page_[index - kPagePerRow];
-        page_[index]->SetTopNeighbor(ptr.get());
+        ROAMPitchPtr neighbor = page_[index - kPagePerRow];
+        DCHECK(neighbor.get() != NULL);
+        page_[index]->SetTopNeighbor(neighbor.get());
       }
       visible_page_[cnt] = cnt;
       cnt++;

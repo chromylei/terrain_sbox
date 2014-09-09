@@ -197,6 +197,22 @@ void ROAMPitch::tessellate(const azer::Camera& camera) {
   RecursSplit(&right_root_, r, camera);
 }
 
+bool ROAMPitch::IsVisible(const azer::Camera& camera) {
+  azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckWithoutHeight;
+  const azer::Vector3& p1 = tile_->vertex(pitch_.left, pitch_.top);
+  const azer::Vector3& p2 = tile_->vertex(pitch_.right, pitch_.top);
+  const azer::Vector3& p3 = tile_->vertex(pitch_.left, pitch_.bottom);
+  const azer::Vector3& p4 = tile_->vertex(pitch_.right, pitch_.bottom);
+  azer::VisibleState v1 = camera.frustrum().IsVisible(p1, opt);
+  azer::VisibleState v2 = camera.frustrum().IsVisible(p2, opt);
+  azer::VisibleState v3 = camera.frustrum().IsVisible(p3, opt);
+  azer::VisibleState v4 = camera.frustrum().IsVisible(p4, opt);
+  return v1 == azer::kFullyVisible
+      && v2 == azer::kFullyVisible
+      && v3 == azer::kFullyVisible
+      && v4 == azer::kFullyVisible;
+}
+
 void ROAMPitch::Init() {
   ROAMPitch::CalcVariance();
 
@@ -296,7 +312,7 @@ ROAMPitch::Arena::~Arena() {
 
 ROAMPitch::BiTriTreeNode* ROAMPitch::allocate() {
   BiTriTreeNode* node = arena_.allocate();
-  // memset(node, 0, sizeof(BiTriTreeNode));
+  memset(node, 0, sizeof(BiTriTreeNode));
   return node;
 }
 

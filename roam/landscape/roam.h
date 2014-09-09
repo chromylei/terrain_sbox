@@ -100,6 +100,8 @@ class ROAMPitch {
   // void SetRightNeighbor(ROAMPitch* pitch);
   void SetTopNeighbor(ROAMPitch* pitch);
   // void SetBottomNeighbor(ROAMPitch* pitch);
+
+  bool IsVisible(const azer::Camera& camera);
  private:
   void split_triangle(const Triangle& tri, Triangle* l, Triangle* r);
 
