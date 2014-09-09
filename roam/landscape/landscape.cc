@@ -5,43 +5,54 @@
 #include "azer/render/render.h"
 
 void LandScape::update(const azer::Camera& camera) {
-  visible_num_ = 0;
-
-  int cnt = 0;
+  memset(visible_flags_, 0, sizeof(visible_flags_));
   for (int row = 0; row < kPagePerRow; ++row) {
     for (int col = 0; col < kPagePerRow; ++col) {
       int index = row * kPagePerRow + col;
       ROAMPitchPtr& ptr = page_[index];
-      if (ptr->IsVisible(camera)) {
+      if (!ptr->IsVisible(camera)) {
         continue;
       }
+
+      visible_flags_[index] = 1;
       if (col > 0) {
         ROAMPitchPtr& neighbor = page_[index - 1];
         DCHECK(neighbor.get() != NULL);
         ptr->SetLeftNeighbor(neighbor.get());
+        visible_flags_[index - 1] = 1;
       }
       if (row > 0) {
         ROAMPitchPtr& neighbor = page_[index - kPagePerRow];
         DCHECK(neighbor.get() != NULL);
         ptr->SetTopNeighbor(neighbor.get());
+        visible_flags_[index - kPagePerRow] = 1;
       }
-      visible_page_[cnt] = cnt;
-      cnt++;
-      visible_num_++;
     }
   }
 
-  for (int i = 0; i < visible_num_; ++i) {
-    int index = visible_page_[i];
-    page_[index]->tessellate(camera);
+  for (int row = 0; row < kPagePerRow; ++row) {
+    for (int col = 0; col < kPagePerRow; ++col) {
+      int index = row * kPagePerRow + col;
+      if (visible_flags_[index]) {
+        ROAMPitchPtr& ptr = page_[index];
+        ptr->tessellate(camera);
+      }
+    }
   }
 }
 
 int32* LandScape::indices(int32* indicesptr) {
   int32* cur = indicesptr;
-  for (int i = 0; i < visible_num_; ++i) {
-    cur = page_[visible_page_[i]]->indices(cur);
+  for (int row = 0; row < kPagePerRow; ++row) {
+    for (int col = 0; col < kPagePerRow; ++col) {
+      int index = row * kPagePerRow + col;
+      if (visible_flags_[index]) {
+        ROAMPitchPtr& ptr = page_[index];
+        cur = ptr->indices(cur);
+      }
+    }
   }
+
   return cur;
 }
 

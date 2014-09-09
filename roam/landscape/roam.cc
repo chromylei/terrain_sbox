@@ -111,7 +111,6 @@ void ROAMPitch::SplitNode(BiTriTreeNode* pnode) {
   if (pnode->base_neighbor) {
     // DCHECK(pnode == pnode->base_neighbor->base_neighbor);
     if (pnode != pnode->base_neighbor->base_neighbor) {
-      LOG(ERROR) << "ERROR";
     }
   }
 }
@@ -198,7 +197,8 @@ void ROAMPitch::tessellate(const azer::Camera& camera) {
 }
 
 bool ROAMPitch::IsVisible(const azer::Camera& camera) {
-  azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckWithoutHeight;
+  // azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckWithoutHeight;
+  azer::Frustrum::CheckVisibleOption opt = azer::Frustrum::kCheckAll;
   const azer::Vector3& p1 = tile_->vertex(pitch_.left, pitch_.top);
   const azer::Vector3& p2 = tile_->vertex(pitch_.right, pitch_.top);
   const azer::Vector3& p3 = tile_->vertex(pitch_.left, pitch_.bottom);
@@ -207,10 +207,15 @@ bool ROAMPitch::IsVisible(const azer::Camera& camera) {
   azer::VisibleState v2 = camera.frustrum().IsVisible(p2, opt);
   azer::VisibleState v3 = camera.frustrum().IsVisible(p3, opt);
   azer::VisibleState v4 = camera.frustrum().IsVisible(p4, opt);
-  return v1 == azer::kFullyVisible
+  bool b = v1 == azer::kFullyVisible
       || v2 == azer::kFullyVisible
       || v3 == azer::kFullyVisible
       || v4 == azer::kFullyVisible;
+  if (b) {
+    return b;
+  } else {
+    return b;
+  }
 }
 
 void ROAMPitch::Init() {

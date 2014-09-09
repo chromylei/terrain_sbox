@@ -9,7 +9,6 @@ class LandScape {
  public:
   LandScape() {
     memset(page_, 0, sizeof(page_));
-    visible_num_ = 0;
   }
 
   void update(const azer::Camera& camera);
@@ -19,8 +18,7 @@ class LandScape {
  private:
   static const int kPagePerRow = 8;
   ROAMPitchPtr page_[kPagePerRow * kPagePerRow];
-  int visible_page_[kPagePerRow * kPagePerRow];
-  int visible_num_;
+  int visible_flags_[kPagePerRow * kPagePerRow];
   DISALLOW_COPY_AND_ASSIGN(LandScape);
 };
 
