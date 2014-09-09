@@ -10,9 +10,11 @@ void LandScape::update(const azer::Camera& camera) {
     for (int col = 0; col < kPagePerRow; ++col) {
       int index = row * kPagePerRow + col;
       ROAMPitchPtr& ptr = page_[index];
+      /*
       if (!ptr->IsVisible(camera)) {
         continue;
       }
+      */
 
       visible_flags_[index] = 1;
       if (col > 0) {
