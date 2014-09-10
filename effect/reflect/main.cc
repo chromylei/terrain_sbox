@@ -7,11 +7,14 @@
 #include "tersbox/effect/common/load.h"
 #include "tersbox/base/camera_control.h"
 #include "diffuse.afx.h"
+#include "reflect.afx.h"
 #include <tchar.h>
 
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/reflect/"
 #define SHADER_NAME "diffuse.afx"
+#define REF_SHADER_NAME "reflect.afx"
 #define TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\seafloor.dds")
+#define BLUE_TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\blue01.dds")
 using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
@@ -28,15 +31,17 @@ class MainDelegate : public azer::WindowHost::Delegate {
   void InitBoxVertex(azer::RenderSystem* rs);
   void InitPlane(azer::RenderSystem* rs);
   void InitRenderTarget(azer::RenderSystem* rs);
-  void RenderReflect();
+  void RenderReflect(const azer::Matrix4& mirror);
   
   azer::VertexBufferPtr vb_;
   azer::VertexBufferPtr plane_vb_;
   std::unique_ptr<DiffuseEffect> effect_;
+  std::unique_ptr<ReflectEffect> ref_effect_;
   DiffuseEffect::DirLight light_;
   azer::Matrix4 world_;
   azer::Camera camera_;
   azer::TexturePtr tex_;
+  azer::TexturePtr blue_tex_;
 
   // render to target
   azer::TexturePtr rt_tex_;
@@ -53,29 +58,15 @@ void MainDelegate::InitRenderTarget(azer::RenderSystem* rs) {
   sm_renderer_.reset(rs->CreateRenderer(opt));
 }
 
-azer::Matrix4 CalcReflectMatrix(const azer::Plane& plane,
-                                const azer::Camera& camera) {
-  float dist = plane.distance(camera.position());
-  azer::Vector3 pos = camera.position() - plane.normal() * (dist * 2.0f);
-  azer::Vector3 up = camera.up();
-  
-  azer::Vector3 look_dir = camera.direction();
-  return azer::LookDirRH(pos, look_dir, up);
-}
-
-void MainDelegate::RenderReflect() {
+void MainDelegate::RenderReflect(const azer::Matrix4& mirror) {
   sm_renderer_->Use();
   sm_renderer_->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
-  sm_renderer_->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+  sm_renderer_->Clear(azer::Vector4(0.0f, 0.0f, 0.8f, 1.0f));
   sm_renderer_->ClearDepthAndStencil();
   sm_renderer_->SetCullingMode(azer::kCullNone);
   sm_renderer_->EnableDepthTest(true);
-
-  azer::Plane plane(azer::Vector3(0.0f, -1.5f, 1.0f),
-                    azer::Vector3(0.0f, -1.5f, -1.0f),
-                    azer::Vector3(1.0f, -1.5f, 0.0f));
   const azer::Matrix4& proj = camera_.frustrum().projection();
-  azer::Matrix4 reflect_view = CalcReflectMatrix(plane, camera_);
+  azer::Matrix4 reflect_view = std::move(mirror * camera_.GetViewMatrix());
   azer::Matrix4 pvw = std::move(proj * reflect_view * world_);
   // azer::Matrix4 pvw = std::move(camera_.GetProjViewMatrix() * world_);
   effect_->SetPVW(pvw);
@@ -88,6 +79,11 @@ void MainDelegate::RenderReflect() {
 }
 
 void MainDelegate::InitPlane(azer::RenderSystem* rs) {
+  azer::ShaderArray shaders;
+  CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR REF_SHADER_NAME ".vs", &shaders));
+  CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR REF_SHADER_NAME ".ps", &shaders));
+  ref_effect_.reset(new ReflectEffect(shaders.GetShaderVec(), rs));
+
   azer::VertexDataPtr data;
   std::vector<Vertex> vertices = std::move(
       loadModel(base::FilePath(TEXT("tersbox/effect/data/plane01.txt"))));
@@ -124,6 +120,9 @@ void MainDelegate::Init() {
   texopt.target = azer::Texture::kShaderResource;
   azer::ImagePtr imgptr(azer::LoadImageFromFile(TEXPATH));
   tex_.reset(rs->CreateTexture(texopt, imgptr.get()));
+  azer::ImagePtr blue_imgptr(azer::LoadImageFromFile(BLUE_TEXPATH));
+  blue_tex_.reset(rs->CreateTexture(texopt, blue_imgptr.get()));
+  
   camera_.SetPosition(azer::Vector3(0.0f, 0.0f, 8.0f));
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
@@ -144,7 +143,11 @@ void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
 
-  RenderReflect();
+  azer::Plane plane(azer::Vector3(1.0f, -1.5f, 0.0f),
+                    azer::Vector3(1.0f, -1.5f, 1.0f),
+                    azer::Vector3(0.0f, -1.5f, 1.0f));
+  azer::Matrix4 mirror = std::move(azer::MirrorTrans(plane));
+  RenderReflect(mirror);
 
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
@@ -163,10 +166,14 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
 
   azer::Matrix4 world = std::move(azer::Translate(0.0, -1.5f, 0.0));
   pvw = std::move(camera_.GetProjViewMatrix() * world);
-  effect_->SetPVW(pvw);
-  effect_->SetWorld(world);
-  effect_->SetTexture(sm_renderer_->GetRenderTarget()->GetTexture());
-  effect_->Use(renderer);
+  azer::Matrix4 refpvw = camera_.frustrum().projection() *
+      mirror * camera_.GetViewMatrix() * world;
+  ref_effect_->SetReflectPVW(refpvw);
+  ref_effect_->SetPVW(pvw);
+  ref_effect_->SetWorld(world);
+  ref_effect_->SetRefTexture(sm_renderer_->GetRenderTarget()->GetTexture());
+  ref_effect_->SetTexture(blue_tex_);
+  ref_effect_->Use(renderer);
   renderer->Draw(plane_vb_.get(), azer::kTriangleList);
 }
 

@@ -5,6 +5,11 @@ afx("tersbox_effect_reflect_effect") {
   filename = "diffuse"
 }
 
+afx("tersbox_effect_reflect_effect2") {
+  source = "reflect.afx"
+  filename = "reflect"
+}
+
 executable("tersbox_effect_reflect") {
   sources = ["main.cc"]
   deps = ["//tersbox/base:tersbox_base",
@@ -12,5 +17,6 @@ executable("tersbox_effect_reflect") {
           "//azer/render:render",
           "//base:appinit",
           ":tersbox_effect_reflect_effect",
+          ":tersbox_effect_reflect_effect2",
          ]
 }
