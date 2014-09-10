@@ -27,6 +27,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
 
   void InitBoxVertex(azer::RenderSystem* rs);
   void InitPlane(azer::RenderSystem* rs);
+  void InitRenderTarget(azer::RenderSystem* rs);
+  void RenderReflect();
   
   azer::VertexBufferPtr vb_;
   azer::VertexBufferPtr plane_vb_;
@@ -35,7 +37,54 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Matrix4 world_;
   azer::Camera camera_;
   azer::TexturePtr tex_;
+
+  // render to target
+  azer::TexturePtr rt_tex_;
+  std::unique_ptr<azer::Renderer> sm_renderer_;
 };
+
+void MainDelegate::InitRenderTarget(azer::RenderSystem* rs) {
+  azer::Texture::Options opt;
+  opt.width = 800;
+  opt.height = 600;
+  opt.format = azer::kRGBAf;
+  opt.target = (azer::Texture::BindTarget)
+      (azer::Texture::kRenderTarget | azer::Texture::kShaderResource);
+  sm_renderer_.reset(rs->CreateRenderer(opt));
+}
+
+azer::Matrix4 CalcReflectMatrix(const azer::Plane& plane,
+                                const azer::Camera& camera) {
+  float dist = plane.distance(camera.position());
+  azer::Vector3 pos = camera.position() - plane.normal() * (dist * 2.0f);
+  azer::Vector3 up = camera.up();
+  azer::Ray ray(camera.position(), camera.direction());
+  azer::Vector3 lookat = plane.intersect(ray);
+  return azer::LookAtRH(pos, lookat, up);
+}
+
+void MainDelegate::RenderReflect() {
+  sm_renderer_->Use();
+  sm_renderer_->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
+  sm_renderer_->Clear(azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+  sm_renderer_->ClearDepthAndStencil();
+  sm_renderer_->SetCullingMode(azer::kCullNone);
+  sm_renderer_->EnableDepthTest(true);
+
+  azer::Plane plane;
+  const azer::Matrix4& proj = camera_.frustrum().projection();
+  azer::Matrix4 reflect_view = CalcReflectMatrix(plane, camera_);
+  azer::Matrix4 pvw = std::move(proj * reflect_view * world_);
+  renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+  renderer->ClearDepthAndStencil();
+  effect_->SetPVW(pvw);
+  effect_->SetWorld(world_);
+  effect_->SetDirLight(light_);
+  effect_->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
+  effect_->SetTexture(tex_);
+  effect_->Use(sm_renderer.get());
+  sm_renderer->Draw(vb_.get(), azer::kTriangleList);
+}
 
 void MainDelegate::InitPlane(azer::RenderSystem* rs) {
   azer::VertexDataPtr data;
@@ -68,6 +117,7 @@ void MainDelegate::Init() {
 
   InitBoxVertex(rs);
   InitPlane(rs);
+  InitRenderTarget();
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
@@ -92,10 +142,13 @@ void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
+
+  RenderReflect();
+
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
-    
   azer::Matrix4 pvw = std::move(camera_.GetProjViewMatrix() * world_);
+  renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
   effect_->SetPVW(pvw);
@@ -112,6 +165,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetPVW(pvw);
   effect_->SetWorld(world);
   effect_->Use(renderer);
+  effect_->SetTexture(sm_renderer_->GetRenderTarget()->GetTexture());
   renderer->Draw(plane_vb_.get(), azer::kTriangleList);
 }
 
