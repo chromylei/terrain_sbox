@@ -58,32 +58,33 @@ azer::Matrix4 CalcReflectMatrix(const azer::Plane& plane,
   float dist = plane.distance(camera.position());
   azer::Vector3 pos = camera.position() - plane.normal() * (dist * 2.0f);
   azer::Vector3 up = camera.up();
-  azer::Ray ray(camera.position(), camera.direction());
-  azer::Vector3 lookat = plane.intersect(ray);
-  return azer::LookAtRH(pos, lookat, up);
+  
+  azer::Vector3 look_dir = camera.direction();
+  return azer::LookDirRH(pos, look_dir, up);
 }
 
 void MainDelegate::RenderReflect() {
   sm_renderer_->Use();
   sm_renderer_->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
-  sm_renderer_->Clear(azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+  sm_renderer_->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   sm_renderer_->ClearDepthAndStencil();
   sm_renderer_->SetCullingMode(azer::kCullNone);
   sm_renderer_->EnableDepthTest(true);
 
-  azer::Plane plane;
+  azer::Plane plane(azer::Vector3(0.0f, -1.5f, 1.0f),
+                    azer::Vector3(0.0f, -1.5f, -1.0f),
+                    azer::Vector3(1.0f, -1.5f, 0.0f));
   const azer::Matrix4& proj = camera_.frustrum().projection();
   azer::Matrix4 reflect_view = CalcReflectMatrix(plane, camera_);
   azer::Matrix4 pvw = std::move(proj * reflect_view * world_);
-  renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-  renderer->ClearDepthAndStencil();
+  // azer::Matrix4 pvw = std::move(camera_.GetProjViewMatrix() * world_);
   effect_->SetPVW(pvw);
   effect_->SetWorld(world_);
   effect_->SetDirLight(light_);
   effect_->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
   effect_->SetTexture(tex_);
-  effect_->Use(sm_renderer.get());
-  sm_renderer->Draw(vb_.get(), azer::kTriangleList);
+  effect_->Use(sm_renderer_.get());
+  sm_renderer_->Draw(vb_.get(), azer::kTriangleList);
 }
 
 void MainDelegate::InitPlane(azer::RenderSystem* rs) {
@@ -117,7 +118,7 @@ void MainDelegate::Init() {
 
   InitBoxVertex(rs);
   InitPlane(rs);
-  InitRenderTarget();
+  InitRenderTarget(rs);
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
@@ -164,8 +165,8 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   pvw = std::move(camera_.GetProjViewMatrix() * world);
   effect_->SetPVW(pvw);
   effect_->SetWorld(world);
-  effect_->Use(renderer);
   effect_->SetTexture(sm_renderer_->GetRenderTarget()->GetTexture());
+  effect_->Use(renderer);
   renderer->Draw(plane_vb_.get(), azer::kTriangleList);
 }
 
