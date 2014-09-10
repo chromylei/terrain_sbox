@@ -49,8 +49,11 @@ void MainDelegate::Init() {
   memcpy(data_->pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data_));
-  tex_.reset(rs->CreateTextureFromFile(azer::Texture::k2D,
-                                       base::FilePath(TEXPATH)));
+
+  azer::Texture::Options texopt;
+  texopt.target = azer::Texture::kShaderResource;
+  azer::ImagePtr imgptr(azer::util::LoadImageFromFile(TEXPATH));
+  tex_.reset(rs->CreateTexture(texopt, imgptr.get()));
   camera_.SetPosition(azer::Vector3(0.0f, 3.0f, 0.0f));
 
   light_.dir = azer::Vector4(0.0f, -0.4f, 0.4f, 1.0f);
