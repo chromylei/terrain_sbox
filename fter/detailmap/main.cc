@@ -60,7 +60,7 @@ void MainDelegate::Init() {
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DetailmapEffect(shaders.GetShaderVec(), rs));
-  heightmap_ = azer::util::LoadImageFromFile(FilePath(HEIGHTMAP_PATH));
+  heightmap_ = azer::LoadImageFromFile(FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 
   light_.dir = azer::Vector4(0.0f, -0.7f, 0.4f, 1.0f);
@@ -70,11 +70,11 @@ void MainDelegate::Init() {
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
   base::FilePath color_tex_path(TEX_PATH);
-  azer::ImagePtr tex(azer::util::LoadImageFromFile(color_tex_path));
+  azer::ImagePtr tex(azer::LoadImageFromFile(color_tex_path));
   color_tex_.reset(rs->CreateTexture(texopt, tex.get()));
 
   base::FilePath detail_tex_path(DETAIL_PATH);
-  azer::ImagePtr tex2(azer::util::LoadImageFromFile(detail_tex_path));
+  azer::ImagePtr tex2(azer::LoadImageFromFile(detail_tex_path));
   detail_tex_.reset(rs->CreateTexture(texopt, tex2.get()));
 }
 

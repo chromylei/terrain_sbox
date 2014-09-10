@@ -52,7 +52,7 @@ void MainDelegate::Init() {
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
-  azer::ImagePtr imgptr(azer::util::LoadImageFromFile(TEXPATH));
+  azer::ImagePtr imgptr(azer::LoadImageFromFile(TEXPATH));
   tex_.reset(rs->CreateTexture(texopt, imgptr.get()));
   camera_.SetPosition(azer::Vector3(0.0f, 3.0f, 0.0f));
 

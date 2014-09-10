@@ -56,7 +56,7 @@ void MainDelegate::Init() {
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new SimpleTexEffect(shaders.GetShaderVec(), rs));
-  heightmap_ = azer::util::LoadImageFromFile(FilePath(HEIGHTMAP_PATH));
+  heightmap_ = azer::LoadImageFromFile(FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 
   light_.dir = azer::Vector4(0.0f, -0.6f, 0.4f, 1.0f);
@@ -66,8 +66,8 @@ void MainDelegate::Init() {
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;
   base::FilePath color_tex_path(TEX_PATH);
-  azer::ImagePtr tex(azer::util::LoadImageFromFile(color_tex_path));
-  azer::util::SaveImage(tex.get(), FilePath(FILE_PATH_LITERAL("tmp.bmp")));
+  azer::ImagePtr tex(azer::LoadImageFromFile(color_tex_path));
+  azer::SaveImage(tex.get(), FilePath(FILE_PATH_LITERAL("tmp.bmp")));
   color_tex_.reset(rs->CreateTexture(texopt, tex.get()));
 }
 

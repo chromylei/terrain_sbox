@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 #include "base/rand_util.h"
-#include "azer/util/image.h"
+#include "azer/render/util/image.h"
 
 
 void TerrainData::GenPlasma() {
@@ -112,7 +112,7 @@ bool TerrainData::Save(const ::base::FilePath& path) {
     }
   }
 
-  return azer::util::SaveImage(&image, path);
+  return azer::SaveImage(&image, path);
 }
 
 void TerrainData::SetHeight(int x, int y, float h) {

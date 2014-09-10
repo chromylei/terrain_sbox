@@ -51,7 +51,7 @@ void MainDelegate::Init() {
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
-  heightmap_ = azer::util::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
+  heightmap_ = azer::LoadImageFromFile(::base::FilePath(HEIGHTMAP_PATH));
   InitPhysicsBuffer(rs);
 }
 
