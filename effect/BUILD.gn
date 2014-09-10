@@ -2,6 +2,7 @@ group("tersbox_effect") {
   deps = [
     "common:tersbox_effect_common",
     "cube:tersbox_effect_cube",
+    "fog:tersbox_effect_fog",
     "reflect:tersbox_effect_reflect",
   ]
 }
