@@ -2,6 +2,7 @@
 
 #include "azer/render/render.h"
 #include "azer/math/math.h"
+#include "tersbox/effect/common/tex_render.h"
 #include "base/files/file_path.h"
 #include "base/base.h"
 
@@ -17,32 +18,25 @@ class Reflect {
 
   const azer::Matrix4& GetReflectView() const { return reflect_view_;}
   const azer::Matrix4& GetMirror() const { return mirror_;}
-  const azer::Matrix4& GetMirroPV() const { return pv_;}
+  const azer::Matrix4& GetMirrorPV() const { return pv_;}
 
   azer::TexturePtr GetReflectTex() {
-    return reflect_->GetRenderTarget()->GetTexture();
+    return target_.GetRTTex();
   }
 
-  azer::Renderer* GetRenderer() { return reflect_.get();}
+  azer::Renderer* GetRenderer() { return target_.GetRenderer();}
  private:
   azer::Matrix4 reflect_view_;
   azer::Matrix4 mirror_;
   azer::Matrix4 pv_;
   azer::Plane plane_;
-  std::unique_ptr<azer::Renderer> reflect_;
+  TexRender target_;
   DISALLOW_COPY_AND_ASSIGN(Reflect);
 };
 
 inline void Reflect::Init(azer::RenderSystem* rs) {
   mirror_ = std::move(azer::MirrorTrans(plane_));
-
-  azer::Texture::Options opt;
-  opt.width = 800;
-  opt.height = 600;
-  opt.format = azer::kRGBAf;
-  opt.target = (azer::Texture::BindTarget)
-      (azer::Texture::kRenderTarget | azer::Texture::kShaderResource);
-  reflect_.reset(rs->CreateRenderer(opt));
+  target_.Init(rs);
 }
 
 inline void Reflect::OnUpdateCamera(const azer::Camera& camera) {
@@ -52,14 +46,9 @@ inline void Reflect::OnUpdateCamera(const azer::Camera& camera) {
 }
 
 inline void Reflect::BeginRender() {
-  reflect_->Use();
-  reflect_->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
-  reflect_->Clear(azer::Vector4(0.0f, 0.0f, 0.8f, 1.0f));
-  reflect_->ClearDepthAndStencil();
-  reflect_->SetCullingMode(azer::kCullNone);
-  reflect_->EnableDepthTest(true);
+  target_.BeginRender();
 }
 
 inline void Reflect::Reset(azer::Renderer* renderer) {
-  renderer->Use();
+  target_.Reset(renderer);
 }

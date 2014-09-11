@@ -8,6 +8,7 @@
 #include "tersbox/effect/water/water.h"
 #include "tersbox/effect/water/reflect.h"
 #include "tersbox/base/camera_control.h"
+#include "tersbox/effect/common/tex_render.h"
 #include "diffuse.afx.h"
 #include <tchar.h>
 
@@ -36,6 +37,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
  private:
   void InitRenderSystem(azer::RenderSystem* rs);
   void RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer);
+  void RenderRefraction(azer::Renderer* default_render);
   azer::VertexBuffer* LoadVertex(const ::base::FilePath& path,
                                    azer::RenderSystem* rs);
   Water water_;
@@ -49,6 +51,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   DiffuseEffect::DirLight light_;
   azer::Camera camera_;
 
+  TexRender target_;
   std::unique_ptr<Reflect> reflect_ptr_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -84,6 +87,7 @@ void MainDelegate::Init() {
                     azer::Vector3(0.0f, 2.75f, 1.0f));
   reflect_ptr_.reset(new Reflect(plane));
   reflect_ptr_->Init(rs);
+  target_.Init(rs);
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -127,15 +131,21 @@ void MainDelegate::RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
   DCHECK(NULL != rs);
+  azer::Renderer* renderer = rs->GetDefaultRenderer();
+
   reflect_ptr_->BeginRender();
   RenderScene(reflect_ptr_->GetMirrorPV(), reflect_ptr_->GetRenderer());
+  reflect_ptr_->Reset(renderer);
 
-  azer::Renderer* renderer = rs->GetDefaultRenderer();
+  target_.BeginRender();
+  RenderScene(camera_.GetProjViewMatrix(), target_.GetRenderer());
+  target_.Reset(renderer);
+
   renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
   RenderScene(camera_.GetProjViewMatrix(), renderer);
-  water_.OnDraw(camera_, reflect_ptr_.get(), renderer);
+  water_.OnDraw(camera_, reflect_ptr_.get(), target_.GetRTTex(), renderer);
 }
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {

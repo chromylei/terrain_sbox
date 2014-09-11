@@ -15,15 +15,17 @@ struct DirLight {
 [uniform_func="SetReflectPVW"] uniform mat4 reflect_pvw;
 [uniform_func="SetWorld"] uniform mat4 world;
 [uniform_func="SetDirLight"] uniform DirLight light;
-[uniform_func="SetDiffuse"] uniform vec4 diffuse;
-[uniform_func="SetTexture"] uniform Texture2D tex;
-[uniform_func="SetRefTexture"] uniform Texture2D reftex;
+[uniform_func="SetReflectTexture"] uniform Texture2D reflect_tex;
+[uniform_func="SetRefractTexture"] uniform Texture2D refract_tex;
+[uniform_func="SetBumpTexture"] uniform Texture2D bumptex;
 
 exchange struct VsOutput {
   [semantic="position" system="true"]
   vec4 position;
   vec2 texcoord;
   vec4 normal;
+  vec4 tangent;
+  vec4 binormal;
   vec4 reflect_position;
 };
 
@@ -31,12 +33,16 @@ exchange struct VSInput {
   vec3 position;
   vec2 texcoord;
   vec3 normal;
+  vec3 tangent;
+  vec3 binormal;
 };
 
 VsOutput vs_main(VSInput input) {
   VsOutput o;
   o.position = pvw * vec4(input.position, 1.0);
   o.normal = world * vec4(input.normal, 0.0);
+  o.tangent = world * vec4(input.tangent, 0.0);
+  o.binormal = world * vec4(input.binormal, 0.0);
   o.texcoord = input.texcoord;
   o.reflect_position = reflect_pvw * vec4(input.position, 1.0);
   return o;
@@ -48,12 +54,20 @@ vec4 ps_main(VsOutput o) {
   reflect_texcoord.x = o.reflect_position.x / o.reflect_position.w / 2.0f + 0.5f;
   reflect_texcoord.y = -o.reflect_position.y / o.reflect_position.w / 2.0f + 0.5f;
 
-  vec4 tex_color = sample2D(tex, o.texcoord);
-  vec4 reftex_color = sample2D(reftex, reflect_texcoord);
-  float diffuse_factor = clamp(dot(normalize(o.normal.xyz), -light.dir.xyz),
+  vec2 refract_texcoord;
+  refract_texcoord.x = o.position.x / o.position.w / 2.0f + 0.5f;
+  refract_texcoord.y = -o.position.y / o.position.w / 2.0f + 0.5f;
+
+  vec4 bn = sample2D(bumptex, o.texcoord);
+  bn = bn * 2.0f - 1.0f;
+  vec4 normal = bn.x * o.tangent + bn.y * o.binormal + bn.z * o.normal;
+
+  vec4 refract_color = sample2D(refract_tex, o.texcoord);
+  vec4 reflect_color = sample2D(reflect_tex, reflect_texcoord);
+  float diffuse_factor = clamp(dot(normalize(normal.xyz), -light.dir.xyz),
                                0.0, 1.0);
   vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
-  vec4 color = vec4(light_factor.xyz * diffuse.xyz, 1.0) * tex_color;
-  return lerp(tex_color, reftex_color, 0.15f);
+  vec4 color = vec4(light_factor.xyz, 1.0) * refract_color;
+  return lerp(refract_color, reflect_color, 0.15f);
 }
 

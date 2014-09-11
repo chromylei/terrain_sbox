@@ -50,7 +50,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
 
 void MainDelegate::RenderReflect() {
   reflect_ptr_->BeginRender();
-  effect_->SetPVW(reflect_ptr_->GetMirroPV() * world_);
+  effect_->SetPVW(reflect_ptr_->GetMirrorPV() * world_);
   effect_->SetWorld(world_);
   effect_->SetDirLight(light_);
   effect_->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));

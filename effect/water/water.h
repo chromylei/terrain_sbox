@@ -13,15 +13,16 @@ class Water {
   Water() {}
   void OnInit(azer::RenderSystem* rs);
   void OnDraw(const azer::Camera& camera, Reflect* reflect,
-              azer::Renderer* renderer);  
+              azer::TexturePtr refracttex, azer::Renderer* renderer);
+
  private:
-  azer::VertexBuffer* LoadVertex(const ::base::FilePath& path,
-                                 azer::RenderSystem* rs);
+  void InitVertex(const ::base::FilePath& path, azer::RenderSystem* rs);
   void InitRenderTarget(azer::RenderSystem* rs);
   void RenderReflect(const azer::Camera& camera); 
 
   azer::VertexBufferPtr vb_;
   azer::TexturePtr blue_tex_;
+  azer::TexturePtr refract_tex_;
   azer::TexturePtr bumpmap01_;
   std::unique_ptr<WaterEffect> effect_;
 
