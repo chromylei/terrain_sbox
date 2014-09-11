@@ -41,7 +41,7 @@ inline void Reflect::Init(azer::RenderSystem* rs) {
 
 inline void Reflect::OnUpdateCamera(const azer::Camera& camera) {
   const azer::Matrix4& proj = camera.frustrum().projection();
-  reflect_view_ = std::move(mirror_ * camera.GetViewMatrix());
+  reflect_view_ = std::move(camera.GetViewMatrix() * mirror_);
   pv_ = std::move(proj * reflect_view_);
 }
 
