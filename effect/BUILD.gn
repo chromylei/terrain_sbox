@@ -2,7 +2,9 @@ group("tersbox_effect") {
   deps = [
     "common:tersbox_effect_common",
     "cube:tersbox_effect_cube",
+    "bumpmap:tersbox_effect_bumpmap",
     "fog:tersbox_effect_fog",
+    "ice:tersbox_effect_ice",
     "reflect:tersbox_effect_reflect",
   ]
 }
