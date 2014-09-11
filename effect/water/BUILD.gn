@@ -1,0 +1,22 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_effect_water_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+afx("tersbox_effect_water_effect2") {
+  source = "water.afx"
+  filename = "water"
+}
+
+executable("tersbox_effect_water") {
+  sources = ["main.cc", "water.cc"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//tersbox/effect/common:tersbox_effect_common",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_effect_water_effect",
+          ":tersbox_effect_water_effect2",
+         ]
+}

@@ -15,4 +15,3 @@ struct Vertex {
 };
 
 std::vector<Vertex> loadModel(const base::FilePath& path);
-

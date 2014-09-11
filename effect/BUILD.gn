@@ -6,5 +6,6 @@ group("tersbox_effect") {
     "fog:tersbox_effect_fog",
     "ice:tersbox_effect_ice",
     "reflect:tersbox_effect_reflect",
+    "water:tersbox_effect_water",
   ]
 }
