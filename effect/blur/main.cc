@@ -17,7 +17,8 @@ using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() {}
+  MainDelegate()
+      : target_(800, 600) {}
   virtual void OnCreate() {}
   
   void Init();
@@ -34,6 +35,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Matrix4 world_;
   azer::Camera camera_;
   azer::TexturePtr tex_;
+  azer::OverlayPtr overlay_;
+  azer::TexRenderTarget target_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -53,6 +56,9 @@ void MainDelegate::Init() {
   light_.dir = azer::Vector4(0.0f, -0.4f, -0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
+
+  target_.Init(rs);
+  overlay_.reset(rs->CreateOverlay(gfx::RectF(-1.0f, -1.0f, 2.0f, 2.0f)));
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -69,10 +75,9 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
-    
+
+  target_.BeginRender(azer::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
   azer::Matrix4 pvw = camera_.GetProjViewMatrix() * world_;
-  renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-  renderer->ClearDepthAndStencil();
   effect_->SetPVW(pvw);
   effect_->SetWorld(world_);
   effect_->SetDirLight(light_);
@@ -80,6 +85,12 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetTexture(tex_);
   effect_->Use(renderer);
   renderer->Draw(vb_.get(), azer::kTriangleList);
+
+  renderer->Use();
+  renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+  renderer->ClearDepthAndStencil();
+  overlay_->GetEffect()->SetTexture(target_.GetRTTex());
+  overlay_->Render(renderer);
 }
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
