@@ -1,3 +1,4 @@
+import("//build/templates/afx.gni")
 
 static_library("tersbox_effect_common") {
   sources = ["load.cc",

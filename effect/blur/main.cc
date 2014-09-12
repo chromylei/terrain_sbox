@@ -18,8 +18,7 @@ using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate()
-      : target_(800, 600) {}
+  MainDelegate() {}
   virtual void OnCreate() {}
   
   void Init();
@@ -36,8 +35,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Matrix4 world_;
   azer::Camera camera_;
   azer::TexturePtr tex_;
+  azer::EffectPtr overlay_effect_;
   azer::OverlayPtr overlay_;
-  azer::TexRenderTarget target_;
+  BlurGraphics blur_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -58,8 +58,10 @@ void MainDelegate::Init() {
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
 
-  target_.Init(rs);
+  blur_.Init(rs);
   overlay_.reset(rs->CreateOverlay(gfx::RectF(-1.0f, -1.0f, 2.0f, 2.0f)));
+  overlay_effect_.reset(overlay_->CreateDefaultEffect());
+  overlay_->SetEffect(overlay_effect_);
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -75,22 +77,29 @@ void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
   DCHECK(NULL != rs);
-  azer::Renderer* renderer = rs->GetDefaultRenderer();
+  
 
-  target_.BeginRender(azer::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+  azer::Renderer* blur_renderer = blur_.Begin();
   azer::Matrix4 pvw = camera_.GetProjViewMatrix() * world_;
   effect_->SetPVW(pvw);
   effect_->SetWorld(world_);
   effect_->SetDirLight(light_);
   effect_->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
   effect_->SetTexture(tex_);
-  effect_->Use(renderer);
-  renderer->Draw(vb_.get(), azer::kTriangleList);
+  effect_->Use(blur_renderer);
+  blur_renderer->Draw(vb_.get(), azer::kTriangleList);
+  blur_.End();
 
+  blur_.Render();
+
+  azer::Renderer* renderer = rs->GetDefaultRenderer();
+  renderer->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
   renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
-  overlay_->GetEffect()->SetTexture(target_.GetRTTex());
+
+  azer::OverlayEffect* overlay_effect = (azer::OverlayEffect*)overlay_effect_.get();
+  overlay_effect->SetTexture(blur_.GetBlurRTTex());
   overlay_->Render(renderer);
 }
 
