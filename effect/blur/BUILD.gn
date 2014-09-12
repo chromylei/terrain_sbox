@@ -5,12 +5,18 @@ afx("tersbox_effect_blur_effect") {
   filename = "diffuse"
 }
 
+afx("tersbox_effect_blur_effect2") {
+  source = "blur.afx"
+  filename = "blur"
+}
+
 executable("tersbox_effect_blur") {
-  sources = ["main.cc"]
+  sources = ["main.cc", "blur.cc"]
   deps = ["//tersbox/base:tersbox_base",
           "//tersbox/effect/common:tersbox_effect_common",
           "//azer/render:render",
           "//base:appinit",
           ":tersbox_effect_blur_effect",
+          ":tersbox_effect_blur_effect2",
          ]
 }

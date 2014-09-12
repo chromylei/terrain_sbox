@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "azer/util/util.h"
 #include "tersbox/effect/common/load.h"
+#include "tersbox/effect/blur/blur.h"
 #include "tersbox/base/camera_control.h"
 #include "diffuse.afx.h"
 #include <tchar.h>

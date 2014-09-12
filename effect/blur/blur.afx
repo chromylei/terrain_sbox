@@ -1,0 +1,77 @@
+technique [
+    name = "blur"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="BlurEffect"
+           ];
+
+[uniform_func="SetBlurTexture1"] uniform Texture2D tex1;
+[uniform_func="SetBlurTexture2"] uniform Texture2D tex2;
+[uniform_func="SetBlurTexture3"] uniform Texture2D tex3;
+[uniform_func="SetBlurTexture4"] uniform Texture2D tex4;
+[uniform_func="SetBlurTexture5"] uniform Texture2D tex5;
+[uniform_func="SetBlurTexture6"] uniform Texture2D tex6;
+[uniform_func="SetBlurTexture7"] uniform Texture2D tex7;
+[uniform_func="SetBlurTexture8"] uniform Texture2D tex8;
+[uniform_func="SetBlurTexture9"] uniform Texture2D tex9;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 texcoord;
+  vec2 texcoord1;
+  vec2 texcoord2;
+  vec2 texcoord3;
+  vec2 texcoord4;
+  vec2 texcoord5;
+  vec2 texcoord6;
+  vec2 texcoord7;
+  vec2 texcoord8;
+  vec2 texcoord9;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+};
+
+VsOutput vs_main(VSInput input) {
+  const float texel_size = 1 / 800.0f;
+  VsOutput o;
+  o.position = vec4(input.position, 1.0);
+  o.texcoord = input.texcoord;
+  o.texcoord1 = input.texcoord + vec2(texel_size * -4.0f, 0.0f);
+  o.texcoord2 = input.texcoord + vec2(texel_size * -3.0f, 0.0f);
+  o.texcoord3 = input.texcoord + vec2(texel_size * -2.0f, 0.0f);
+  o.texcoord4 = input.texcoord + vec2(texel_size * -1.0f, 0.0f);
+  o.texcoord5 = input.texcoord + vec2(texel_size * -0.0f, 0.0f);
+  o.texcoord6 = input.texcoord + vec2(texel_size *  1.0f, 0.0f);
+  o.texcoord7 = input.texcoord + vec2(texel_size *  2.0f, 0.0f);
+  o.texcoord8 = input.texcoord + vec2(texel_size *  3.0f, 0.0f);
+  o.texcoord9 = input.texcoord + vec2(texel_size *  4.0f, 0.0f);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  float weight0 = 1.0f;
+  float weight1 = 0.9f;
+  float weight2 = 0.55f;
+  float weight3 = 0.18f;
+  float weight4 = 0.1f;
+  float normalization = (weight0 + 2.0f * (weight1 + weight2 + weight3 + weight4));
+  // vec4 tex_diffuse = sample2D(tex, o.texcoord);
+  vec4 c1 = sample2D(tex1, o.texcoord1) * weight4;
+  vec4 c2 = sample2D(tex2, o.texcoord2) * weight3;
+  vec4 c3 = sample2D(tex3, o.texcoord3) * weight2;
+  vec4 c4 = sample2D(tex4, o.texcoord4) * weight1;
+  vec4 c5 = sample2D(tex5, o.texcoord5) * weight0;
+  vec4 c6 = sample2D(tex6, o.texcoord6) * weight1;
+  vec4 c7 = sample2D(tex7, o.texcoord7) * weight2;
+  vec4 c8 = sample2D(tex8, o.texcoord8) * weight3;
+  vec4 c9 = sample2D(tex9, o.texcoord9) * weight4;
+  vec4 color = (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9) / normalization;
+  color.a = 1.0f;
+  return color;
+}
+
