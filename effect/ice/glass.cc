@@ -10,7 +10,7 @@
 #define GLASS_PATH FILE_PATH_LITERAL("tersbox\\effect\\data\\square.txt")
 #define GLASS_TEX FILE_PATH_LITERAL("samples\\resources\\texture\\glass01.dds")
 #define GLASSBUMP_TEX FILE_PATH_LITERAL("samples\\resources\\texture\\icebump01.dds")
-#define PERTURB_TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\ice.dds")
+#define PERTURB_TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\bump03.dds")
 
 void Glass::OnInit(azer::RenderSystem* rs) {
   azer::ShaderArray shaders;
@@ -44,7 +44,7 @@ void Glass::OnDraw(const azer::Camera& camera, azer::TexturePtr refract,
   effect_->SetWorld(world_);
   effect_->SetDirLight(light_);
   effect_->SetTexture(tex_);
-  // effect_->SetPerturbTexture(perturb_tex_);
+  effect_->SetPerturbTexture(perturb_tex_);
   effect_->SetBumpTexture(bumpmap_tex_);
   effect_->SetRefractTexture(refract);
   effect_->Use(renderer);
