@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_effect_shadowmap_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+executable("tersbox_effect_shadowmap") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//tersbox/effect/common:tersbox_effect_common",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_effect_shadowmap_effect",
+         ]
+}
