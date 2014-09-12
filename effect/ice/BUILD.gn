@@ -1,0 +1,22 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_effect_ice_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+afx("tersbox_effect_ice_effect2") {
+  source = "glass.afx"
+  filename = "glass"
+}
+
+executable("tersbox_effect_ice") {
+  sources = ["main.cc", "glass.cc", "glass.h"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//tersbox/effect/common:tersbox_effect_common",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_effect_ice_effect",
+          ":tersbox_effect_ice_effect2",
+         ]
+}

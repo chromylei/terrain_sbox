@@ -1,0 +1,69 @@
+technique [
+    name = "glass"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="GlassEffect"
+           ];
+
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetTexture"] uniform Texture2D tex;
+[uniform_func="SetBumpTexture"] uniform Texture2D bump_tex;
+[uniform_func="SetPerturbTexture"] uniform Texture2D pertrub_tex;
+[uniform_func="SetRefractTexture"] uniform Texture2D refract_tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 texcoord;
+  vec4 normal;
+  vec4 tangent;
+  vec4 binormal;
+  vec4 refract_position;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+  vec3 normal;
+  vec3 tangent;
+  vec3 binormal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.normal = world * vec4(input.normal, 0.0);
+  o.tangent = world * vec4(input.tangent, 0.0);
+  o.binormal = world * vec4(input.binormal, 0.0);
+  o.texcoord = input.texcoord;
+  o.refract_position = pvw * vec4(input.position, 1.0);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  vec2 refract_texcoord;
+  refract_texcoord.x = o.refract_position.x / o.refract_position.w / 2.0f + 0.5f;
+  refract_texcoord.y = -o.refract_position.y / o.refract_position.w / 2.0f + 0.5f;
+  vec4 refract_color = sample2D(refract_tex, refract_texcoord);
+
+  vec4 bn = sample2D(bump_tex, o.texcoord);
+  bn = bn * 2.0f - 1.0f;
+  vec4 normal = bn.x * o.tangent + bn.y * o.binormal + bn.z * o.normal;
+
+  vec4 tex_diffuse = sample2D(tex, o.texcoord);
+  float diffuse_factor = clamp(dot(normalize(normal.xyz), -light.dir.xyz),
+                               0.0, 1.0);
+  vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
+  vec4 color = vec4(light_factor.xyz, 1.0) * tex_diffuse;
+  return lerp(color, refract_color, 0.3);
+}
+
