@@ -86,7 +86,7 @@ void MainDelegate::Init() {
   azer::Plane plane(azer::Vector3(1.0f, 2.75f, 1.0f),
                     azer::Vector3(1.0f, 2.75f, 0.0f),
                     azer::Vector3(0.0f, 2.75f, 1.0f));
-  shadowmap_.Init(rs);
+  // shadowmap_.Init(rs);
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -102,15 +102,15 @@ void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
 void MainDelegate::RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer) {
   effect_->SetDirLight(light_);
   azer::Matrix4 world = azer::Translate(-3.0f, 1.0f, 0.0f);
-  effect_->SetWorld(world);
+  cube_->SetWorld(world);
   Draw<DiffuseEffect>(camera_, effect_.get(), renderer, cube_.get());
 
   world = azer::Translate(3.0f, 1.0f, 0.0f);
-  effect_->SetWorld(world);
+  sphere_->SetWorld(world);
   Draw<DiffuseEffect>(camera_, effect_.get(), renderer, sphere_.get());
 
   world = azer::Translate(0.0f, 0.0f, 0.0f) * azer::Scale(0.4f, 0.4f, 0.4f);
-  effect_->SetWorld(world);
+  ground_->SetWorld(world);
   Draw<DiffuseEffect>(camera_, effect_.get(), renderer, ground_.get());
 }
 
@@ -119,9 +119,11 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
 
+  /*
   azer::Renderer* shadowmap_rd = shadowmap_.Begin(renderer);
   RenderScene(camera_.GetProjViewMatrix(), shadowmap_rd);
   shadowmap_.End();
+  */
 
   renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));

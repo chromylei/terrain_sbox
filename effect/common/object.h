@@ -9,7 +9,7 @@ class Object {
   Object(azer::VertexBufferPtr vb, azer::TexturePtr tex)
       : vb_(vb), tex_(tex) {}
 
-  void SetMatrix(const azer::Matrix4& world) {world_ = world;}
+  void SetWorld(const azer::Matrix4& world) {world_ = world;}
 
   const azer::Matrix4&  world() const { return world_;};
   azer::VertexBufferPtr& vertex_buffer() { return vb_;}
@@ -34,6 +34,7 @@ inline azer::VertexBuffer* LoadVertex(const ::base::FilePath& path,
     v->position = iter->position;
     v->texcoord = iter->texcoord;
     v->normal = iter->normal;
+    v++;
   }
   return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data);
 }
