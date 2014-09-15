@@ -22,6 +22,23 @@
 #define CUBE_TEX FILE_PATH_LITERAL("samples\\resources\\texture\\wall01.dds")
 using base::FilePath;
 
+template<class T>
+void Draw(const azer::Camera& camera, T* effect, azer::Renderer* renderer,
+          Object* obj);
+
+template<>
+void Draw(const azer::Camera& camera, DiffuseEffect* effect,
+          azer::Renderer* renderer, Object* obj) {
+  azer::Matrix4& pvw = std::move(camera.GetProjViewMatrix() * obj->world());
+  effect->SetPVW(pvw);
+  effect->SetWorld(obj->world());
+  effect->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
+  effect->SetTexture(obj->tex());
+  effect->Use(renderer);
+  renderer->Draw(obj->vertex_buffer().get(), azer::kTriangleList);
+}
+
+
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
   MainDelegate() {}
@@ -55,9 +72,9 @@ void MainDelegate::Init() {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
 
-  cube_ = LoadObject<DiffuseEffect>(CUBE_PATH, CUBE_TEX, rs);
-  ground_ = LoadObject<DiffuseEffect>(GROUND_PATH, GROUND_TEX, rs);
-  sphere_ = LoadObject<DiffuseEffect>(SPHERE_PATH, SPHERE_TEX, rs);
+  cube_ = LoadObject<DiffuseEffect>(CUBE_PATH, CUBE_TEX, effect_.get(), rs);
+  ground_ = LoadObject<DiffuseEffect>(GROUND_PATH, GROUND_TEX, effect_.get(), rs);
+  sphere_ = LoadObject<DiffuseEffect>(SPHERE_PATH, SPHERE_TEX, effect_.get(), rs);
   
   camera_.SetPosition(azer::Vector3(0.0f, 6.0f, -8.0));
   camera_.SetLookAt(azer::Vector3(.0f, 0.0f, 0.0f));
@@ -86,15 +103,15 @@ void MainDelegate::RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer
   effect_->SetDirLight(light_);
   azer::Matrix4 world = azer::Translate(-3.0f, 1.0f, 0.0f);
   effect_->SetWorld(world);
-  cube_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
+  Draw<DiffuseEffect>(camera_, effect_.get(), renderer, cube_.get());
 
   world = azer::Translate(3.0f, 1.0f, 0.0f);
   effect_->SetWorld(world);
-  sphere_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
+  Draw<DiffuseEffect>(camera_, effect_.get(), renderer, sphere_.get());
 
   world = azer::Translate(0.0f, 0.0f, 0.0f) * azer::Scale(0.4f, 0.4f, 0.4f);
   effect_->SetWorld(world);
-  ground_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
+  Draw<DiffuseEffect>(camera_, effect_.get(), renderer, ground_.get());
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -139,16 +156,4 @@ azer::VertexBuffer* MainDelegate::LoadVertex(const ::base::FilePath& path,
   memcpy(data.pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
   return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data);
-}
-
-template<>
-void Object::Draw(const azer::Camera& camera, DiffuseEffect* effect,
-                  azer::Renderer* renderer) {
-  azer::Matrix4& pvw = std::move(camera_.GetProjViewMatrix() * world_);
-  effect->SetPVW(pvw);
-  effect->SetWorld(world_);
-  effect->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
-  effect->SetTexture(tex_);
-  effect->Use(renderer);
-  renderer->Draw(vb_.get(), azer::kTriangleList);
 }
