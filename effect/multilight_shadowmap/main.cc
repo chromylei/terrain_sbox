@@ -11,7 +11,7 @@
 #include "diffuse.afx.h"
 #include <tchar.h>
 
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/multilight/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/multilight_shadowmap/"
 #define SHADER_NAME "diffuse.afx"
 
 #define GROUND_PATH FILE_PATH_LITERAL("tersbox\\effect\\data\\ground.txt")

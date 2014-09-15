@@ -56,7 +56,7 @@ vec4 ps_main(VsOutput o) {
   if (sm_texcoord.x > 0.0 && sm_texcoord.x < 1.0
       && sm_texcoord.y > 0.0 && sm_texcoord.y < 1.0) {
     vec4 sm_depth = sample2D(shadowmap_tex, sm_texcoord);
-    if (depth > sm_depth.r + 0.00001) {
+    if (depth > sm_depth.r + 0.0001) {
       light_factor = light.ambient.xyz;
     } else {
       light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
