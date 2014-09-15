@@ -5,8 +5,9 @@
 #include "base/files/file_path.h"
 #include "azer/util/util.h"
 #include "tersbox/effect/common/load.h"
+#include "tersbox/effect/common/object.h"
+#include "tersbox/effect/shadowmap/shadowmap.h"
 #include "tersbox/base/camera_control.h"
-#include "tersbox/effect/common/tex_render.h"
 #include "diffuse.afx.h"
 #include <tchar.h>
 
@@ -32,20 +33,16 @@ class MainDelegate : public azer::WindowHost::Delegate {
   virtual void OnQuit() {}
  private:
   void InitRenderSystem(azer::RenderSystem* rs);
-  void RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer, bool rb);
+  void RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer);
   azer::VertexBuffer* LoadVertex(const ::base::FilePath& path,
-                                   azer::RenderSystem* rs);
-  azer::VertexBufferPtr cube_;
-  azer::TexturePtr cube_tex_;
-  azer::VertexBufferPtr sphere_;
-  azer::TexturePtr sphere_tex_;
-  azer::VertexBufferPtr ground_;
-  azer::TexturePtr ground_tex_;
+                                 azer::RenderSystem* rs);
+  ObjectPtr cube_;
+  ObjectPtr sphere_;
+  ObjectPtr ground_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   azer::Camera camera_;
-
-  TexRender target_;
+  ShadowmapGraphic shadowmap_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -58,14 +55,10 @@ void MainDelegate::Init() {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
 
-  cube_.reset(LoadVertex(FilePath(CUBE_PATH), rs));
-  cube_tex_.reset(azer::CreateShaderTexture(CUBE_TEX, rs));
+  cube_ = LoadObject<DiffuseEffect>(CUBE_PATH, CUBE_TEX, rs);
+  ground_ = LoadObject<DiffuseEffect>(GROUND_PATH, GROUND_TEX, rs);
+  sphere_ = LoadObject<DiffuseEffect>(SPHERE_PATH, SPHERE_TEX, rs);
   
-  ground_.reset(LoadVertex(FilePath(GROUND_PATH), rs));
-  ground_tex_.reset(azer::CreateShaderTexture(GROUND_TEX, rs));
-  
-  sphere_.reset(LoadVertex(FilePath(SPHERE_PATH), rs));
-  sphere_tex_.reset(azer::CreateShaderTexture(SPHERE_TEX, rs));
   camera_.SetPosition(azer::Vector3(0.0f, 6.0f, -8.0));
   camera_.SetLookAt(azer::Vector3(.0f, 0.0f, 0.0f));
 
@@ -76,7 +69,7 @@ void MainDelegate::Init() {
   azer::Plane plane(azer::Vector3(1.0f, 2.75f, 1.0f),
                     azer::Vector3(1.0f, 2.75f, 0.0f),
                     azer::Vector3(0.0f, 2.75f, 1.0f));
-  target_.Init(rs);
+  shadowmap_.Init(rs);
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -89,35 +82,19 @@ void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
   renderer->EnableDepthTest(true);
 }
 
-void MainDelegate::RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer,
-                               bool rb) {
-  azer::Matrix4 world = azer::Translate(-3.0f, 1.0f, 0.0f);
-  azer::Matrix4 pvw = pv * world;
-  effect_->SetPVW(pvw);
-  effect_->SetWorld(world);
+void MainDelegate::RenderScene(const azer::Matrix4& pv, azer::Renderer* renderer) {
   effect_->SetDirLight(light_);
-  effect_->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
-  effect_->SetTexture(cube_tex_);
-  effect_->Use(renderer);
-  renderer->Draw(cube_.get(), azer::kTriangleList);
+  azer::Matrix4 world = azer::Translate(-3.0f, 1.0f, 0.0f);
+  effect_->SetWorld(world);
+  cube_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
 
   world = azer::Translate(3.0f, 1.0f, 0.0f);
-  pvw = pv * world;
-  effect_->SetPVW(pvw);
   effect_->SetWorld(world);
-  effect_->SetTexture(sphere_tex_);
-  effect_->Use(renderer);
-  renderer->Draw(sphere_.get(), azer::kTriangleList);
+  sphere_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
 
-  if (rb) {
-    world = azer::Translate(0.0f, 0.0f, 0.0f) * azer::Scale(0.4f, 0.4f, 0.4f);
-    pvw = pv * world;
-    effect_->SetPVW(pvw);
-    effect_->SetWorld(world);
-    effect_->SetTexture(ground_tex_);
-    effect_->Use(renderer);
-    renderer->Draw(ground_.get(), azer::kTriangleList);
-  }
+  world = azer::Translate(0.0f, 0.0f, 0.0f) * azer::Scale(0.4f, 0.4f, 0.4f);
+  effect_->SetWorld(world);
+  ground_->Draw<DiffuseEffect>(camera_, effect_.get(), renderer);
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
@@ -125,14 +102,14 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
 
-  target_.BeginRender();
-  RenderScene(camera_.GetProjViewMatrix(), target_.GetRenderer(), true);
-  target_.Reset(renderer);
+  azer::Renderer* shadowmap_rd = shadowmap_.Begin(renderer);
+  RenderScene(camera_.GetProjViewMatrix(), shadowmap_rd);
+  shadowmap_.End();
 
   renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
-  RenderScene(camera_.GetProjViewMatrix(), renderer, true);
+  RenderScene(camera_.GetProjViewMatrix(), renderer);
 }
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
@@ -157,10 +134,21 @@ int main(int argc, char* argv[]) {
 
 azer::VertexBuffer* MainDelegate::LoadVertex(const ::base::FilePath& path,
                                              azer::RenderSystem* rs) {
-  azer::VertexDataPtr data;
   std::vector<Vertex> vertices = std::move(loadModel(path));
-  data.reset(new azer::VertexData(effect_->GetVertexDesc(), vertices.size()));
-  memcpy(data->pointer(), (uint8*)&vertices[0],
+  azer::VertexData data(effect_->GetVertexDesc(), vertices.size());
+  memcpy(data.pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
-  return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data);
+  return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data);
+}
+
+template<>
+void Object::Draw(const azer::Camera& camera, DiffuseEffect* effect,
+                  azer::Renderer* renderer) {
+  azer::Matrix4& pvw = std::move(camera_.GetProjViewMatrix() * world_);
+  effect->SetPVW(pvw);
+  effect->SetWorld(world_);
+  effect->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
+  effect->SetTexture(tex_);
+  effect->Use(renderer);
+  renderer->Draw(vb_.get(), azer::kTriangleList);
 }

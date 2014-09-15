@@ -173,10 +173,9 @@ int main(int argc, char* argv[]) {
 
 azer::VertexBuffer* MainDelegate::LoadVertex(const ::base::FilePath& path,
                                              azer::RenderSystem* rs) {
-  azer::VertexDataPtr data;
   std::vector<Vertex> vertices = std::move(loadModel(path));
-  data.reset(new azer::VertexData(effect_->GetVertexDesc(), vertices.size()));
-  memcpy(data->pointer(), (uint8*)&vertices[0],
+  azer::VertexData data(effect_->GetVertexDesc(), vertices.size());
+  memcpy(data.pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
-  return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data);
+  return rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data);
 }

@@ -24,9 +24,8 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
     azer::Vector4(0.0f, 1.0f, -1.0f, 1.0f),
   };
 
-  azer::VertexDataPtr vdata(new azer::VertexData(effect->GetVertexDesc(),
-                                                 arraysize(vertices)));
-  memcpy(vdata->pointer(), vertices, sizeof(vertices));
+  azer::VertexData vdata(effect->GetVertexDesc(), arraysize(vertices));
+  memcpy(vdata.pointer(), vertices, sizeof(vertices));
 
   int32 indices[] = {
     0, 1, 1, 2, 2, 3, 3, 0,
@@ -36,8 +35,8 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
   azer::IndicesDataPtr idata_ptr(
     new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32));
   memcpy(idata_ptr->pointer(), indices, sizeof(indices));
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
+  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr.get()));
 }
 
 void CubeFrame::Render(azer::Vector3& pos1, azer::Vector3& pos2,

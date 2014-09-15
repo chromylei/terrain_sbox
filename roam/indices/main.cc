@@ -65,9 +65,8 @@ void MainDelegate::Init() {
 
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
-  azer::VertexDataPtr vdata(
-      new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
-  DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata->pointer();
+  azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
+  DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata.pointer();
   DiffuseEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     const azer::Vector3& pos = tile_.vertices()[i];
@@ -84,12 +83,12 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   memcpy(idata_ptr_->pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
 
   azer::IndicesBuffer::Options ibopt;
   ibopt.cpu_access = azer::kCPUWrite;
   ibopt.usage = azer::GraphicBuffer::kDynamic;
-  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr_));
+  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr_.get()));
 }
 
 

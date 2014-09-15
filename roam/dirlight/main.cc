@@ -70,8 +70,7 @@ void MainDelegate::Init() {
 
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
-  azer::VertexDataPtr vdata(
-      new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
+  azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
   int cnt = 0;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
@@ -86,7 +85,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   CHECK_EQ(cnt, tile_.GetVertexNum());
   tile_.CalcNormal();
 
-  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata->pointer();
+  DirlightEffect::Vertex* vertex = (DirlightEffect::Vertex*)vdata.pointer();
   DirlightEffect::Vertex* v = vertex;
   for (int i = 0; i < tile_.GetVertexNum(); ++i) {
     v->position = tile_.vertices()[i];
@@ -99,12 +98,12 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   memcpy(idata_ptr_->pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
 
   azer::IndicesBuffer::Options ibopt;
   ibopt.cpu_access = azer::kCPUWrite;
   ibopt.usage = azer::GraphicBuffer::kDynamic;
-  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr_));
+  ib_.reset(rs->CreateIndicesBuffer(ibopt, idata_ptr_.get()));
 }
 
 

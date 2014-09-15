@@ -48,7 +48,7 @@ void MainDelegate::Init() {
   data_.reset(new azer::VertexData(effect_->GetVertexDesc(), vertices.size()));
   memcpy(data_->pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data_));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data_.get()));
 
   azer::Texture::Options texopt;
   texopt.target = azer::Texture::kShaderResource;

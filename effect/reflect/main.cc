@@ -65,13 +65,12 @@ void MainDelegate::InitPlane(azer::RenderSystem* rs) {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR REF_SHADER_NAME ".ps", &shaders));
   ref_effect_.reset(new ReflectEffect(shaders.GetShaderVec(), rs));
 
-  azer::VertexDataPtr data;
   std::vector<Vertex> vertices = std::move(
       loadModel(base::FilePath(TEXT("tersbox/effect/data/plane01.txt"))));
-  data.reset(new azer::VertexData(effect_->GetVertexDesc(), vertices.size()));
-  memcpy(data->pointer(), (uint8*)&vertices[0],
+  azer::VertexData data(effect_->GetVertexDesc(), vertices.size());
+  memcpy(data.pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
-  plane_vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data));
+  plane_vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data));
 }
 
 void MainDelegate::InitBoxVertex(azer::RenderSystem* rs) {
@@ -79,14 +78,13 @@ void MainDelegate::InitBoxVertex(azer::RenderSystem* rs) {
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
 
-  azer::VertexDataPtr data;
   std::vector<Vertex> vertices = std::move(
       loadModel(base::FilePath(TEXT("tersbox/effect/data/cube.txt"))));
   effect_.reset(new DiffuseEffect(shaders.GetShaderVec(), rs));
-  data.reset(new azer::VertexData(effect_->GetVertexDesc(), vertices.size()));
-  memcpy(data->pointer(), (uint8*)&vertices[0],
+  azer::VertexData data(effect_->GetVertexDesc(), vertices.size());
+  memcpy(data.pointer(), (uint8*)&vertices[0],
          sizeof(DiffuseEffect::Vertex) * vertices.size());
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data));
 }
 
 void MainDelegate::Init() {

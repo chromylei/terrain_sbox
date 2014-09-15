@@ -28,9 +28,8 @@ azer::ShaderArray shaders;
     azer::Vector4( 1.0f, -1.0f, 0.95f, 1.0f),
     azer::Vector4(-1.0f, -1.0f, 0.95f, 1.0f),
   };
-  azer::VertexDataPtr vdata(new azer::VertexData(effect->GetVertexDesc(),
-                                                 arraysize(vertices)));
-  memcpy(vdata->pointer(), vertices, sizeof(vertices));
+  azer::VertexData vdata(effect->GetVertexDesc(), arraysize(vertices));
+  memcpy(vdata.pointer(), vertices, sizeof(vertices));
 
   int32 indices[] = {
     0, 1, 1, 2, 2, 3, 3, 0,
@@ -38,9 +37,8 @@ azer::ShaderArray shaders;
     0, 4, 1, 5, 2, 6, 3, 7,
     8, 9, 9, 10, 10, 11, 11, 8,
   };
-  azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(arraysize(indices), azer::IndicesData::kUint32));
-  memcpy(idata_ptr->pointer(), indices, sizeof(indices));
+  azer::IndicesData idata(arraysize(indices), azer::IndicesData::kUint32);
+  memcpy(idata.pointer(), indices, sizeof(indices));
   int32 indices_plane[] = {
     4, 0, 1, 4, 3, 0,  // top plane
     4, 1, 5, 5, 1, 2,  // right plane
@@ -48,14 +46,12 @@ azer::ShaderArray shaders;
     0, 4, 7, 0, 7, 3,  // left plane
   };
 
-  azer::IndicesDataPtr idata_ptr2(
-      new azer::IndicesData(arraysize(indices_plane), azer::IndicesData::kUint32));
-  memcpy(idata_ptr2->pointer(), indices_plane, sizeof(indices_plane));
+  azer::IndicesData idata2(arraysize(indices_plane), azer::IndicesData::kUint32);
+  memcpy(idata2.pointer(), indices_plane, sizeof(indices_plane));
 
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
-  ibplane_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(),
-                                         idata_ptr2));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
+  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), &idata));
+  ibplane_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), &idata));
 }
 
 void FrustrumFrame::Update(const azer::Camera& camera) {

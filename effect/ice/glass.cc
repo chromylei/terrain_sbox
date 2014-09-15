@@ -72,10 +72,10 @@ void Glass::InitVertex(const ::base::FilePath& path, azer::RenderSystem* rs) {
     }
   }
 
-  azer::VertexDataPtr data;
-  data.reset(new azer::VertexData(effect_->GetVertexDesc(), vertex.size()));
-  memcpy(data->pointer(), (uint8*)&vertex[0],
+  
+  azer::VertexData data(effect_->GetVertexDesc(), vertex.size());
+  memcpy(data.pointer(), (uint8*)&vertex[0],
          sizeof(GlassEffect::Vertex) * vertex.size());
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &data));
 }
 

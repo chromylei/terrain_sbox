@@ -1,0 +1,32 @@
+technique [
+    name = "shadowmap"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="ShadowmapEffect"
+           ];
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+  vec3 normal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  return vec4(o.position.w, o.position.w, o.position.w, 1.0f);
+}
+

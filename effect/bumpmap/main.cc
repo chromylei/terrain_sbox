@@ -82,7 +82,7 @@ void MainDelegate::InitVertex(azer::RenderSystem* rs) {
   data_.reset(new azer::VertexData(effect_->GetVertexDesc(), vertex.size()));
   memcpy(data_->pointer(), (uint8*)&vertex[0],
          sizeof(DiffuseEffect::Vertex) * vertex.size());
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data_));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), data_.get()));
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
