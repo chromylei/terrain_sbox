@@ -9,5 +9,6 @@ group("tersbox_effect") {
     "water:tersbox_effect_water",
     "blur:tersbox_effect_blur",
     "shadowmap:tersbox_effect_shadowmap",
+    "multilight_shadowmap:tersbox_effect_multilight_shadowmap",
   ]
 }
