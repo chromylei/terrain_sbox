@@ -15,7 +15,10 @@ void ShadowmapGraphic::Init(azer::RenderSystem* rs) {
 azer::Renderer* ShadowmapGraphic::Begin(azer::Renderer* renderer) {
   prev_ = renderer;
   target_.BeginRender();
-  return target_.GetRenderer();
+  azer::Renderer* r = target_.GetRenderer();
+  r->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+  r->ClearDepthAndStencil();
+  return r;
 }
 
 void ShadowmapGraphic::End() {

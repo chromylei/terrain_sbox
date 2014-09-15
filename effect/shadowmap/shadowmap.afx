@@ -10,7 +10,6 @@ technique [
 exchange struct VsOutput {
   [semantic="position" system="true"]
   vec4 position;
-
 };
 
 exchange struct VSInput {
@@ -27,6 +26,6 @@ VsOutput vs_main(VSInput input) {
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
-  return vec4(o.position.w, o.position.w, o.position.w, 1.0f);
+  return vec4(o.position.z, o.position.z, o.position.z, 1.0f);
 }
 
