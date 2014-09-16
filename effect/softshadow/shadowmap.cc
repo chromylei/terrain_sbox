@@ -39,8 +39,8 @@ void ShadowmapGraphic::End() {
 
 azer::Renderer* ShadowmapGraphic::BeginHard(azer::Renderer* renderer) {
   prev_ = renderer;
-  target_.BeginRender();
-  azer::Renderer* r = target_.GetRenderer();
+  hard_target_.BeginRender();
+  azer::Renderer* r = hard_target_.GetRenderer();
   r->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   r->ClearDepthAndStencil();
   return r;

@@ -8,7 +8,6 @@ technique [
            ];
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
-[uniform_func="SetWorld"] uniform mat4 world;
 [uniform_func="SetShadowPVW"] uniform mat4 shadowmap_pvw;
 [uniform_func="SetShadowmapTexture"] uniform Texture2D shadowmap_tex;
 
