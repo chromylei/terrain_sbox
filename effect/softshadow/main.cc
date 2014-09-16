@@ -130,20 +130,21 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   const azer::Matrix4& smpv = shadowmap_.GetLightPVMat();
+  const azer::Camera& smcamera = shadowmap_.GetLightCamera();
 
   ShadowmapEffect* effect = shadowmap_.GetEffect();
   azer::Renderer* shadowmap_rd = shadowmap_.Begin(renderer);
-  Draw(shadowmap_.GetLightCamera(), effect, shadowmap_rd, cube_.get());
-  Draw(shadowmap_.GetLightCamera(), effect, shadowmap_rd, sphere_.get());
-  Draw(shadowmap_.GetLightCamera(), effect, shadowmap_rd, ground_.get());
+  Draw(smcamera, effect, shadowmap_rd, cube_.get());
+  Draw(smcamera, effect, shadowmap_rd, sphere_.get());
+  Draw(smcamera, effect, shadowmap_rd, ground_.get());
   shadowmap_.End();
 
   HardShadowmapEffect* effect2 = shadowmap_.GetHardEffect();
   effect2->SetShadowmapTexture(shadowmap_.GetShadowmap());
   azer::Renderer* shadowmap_rd2 = shadowmap_.BeginHard(renderer);
-  Draw(shadowmap_.GetLightCamera(), effect2, smpv, shadowmap_rd2, cube_.get());
-  Draw(shadowmap_.GetLightCamera(), effect2, smpv, shadowmap_rd2, sphere_.get());
-  Draw(shadowmap_.GetLightCamera(), effect2, smpv, shadowmap_rd2, ground_.get());
+  Draw(smcamera, effect2, smpv, shadowmap_rd2, cube_.get());
+  Draw(smcamera, effect2, smpv, shadowmap_rd2, sphere_.get());
+  Draw(smcamera, effect2, smpv, shadowmap_rd2, ground_.get());
   shadowmap_.EndHard();
 
   renderer->Use();
