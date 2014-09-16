@@ -72,8 +72,7 @@ void MainDelegate::Init() {
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
-  azer::VertexDataPtr vdata(
-      new azer::VertexData(effect_->GetVertexDesc(), tile_.GetVertexNum()));
+  azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
   int cnt = 0;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
@@ -89,7 +88,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   CHECK_EQ(cnt, tile_.GetVertexNum());
   tile_.CalcNormal();
 
-  SimpleTexEffect::Vertex* vertex = (SimpleTexEffect::Vertex*)vdata->pointer();
+  SimpleTexEffect::Vertex* vertex = (SimpleTexEffect::Vertex*)vdata.pointer();
   float cell = 1.0f / (float)tile_.GetGridLineNum();
   cnt = 0;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
@@ -102,13 +101,12 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
     }
   }
 
-  azer::IndicesDataPtr idata_ptr(
-      new azer::IndicesData(tile_.indices().size(), azer::IndicesData::kUint32));
-  memcpy(idata_ptr->pointer(), &(tile_.indices()[0]),
+  azer::IndicesData idata(tile_.indices().size(), azer::IndicesData::kUint32);
+  memcpy(idata.pointer(), &(tile_.indices()[0]),
          sizeof(int32) * tile_.indices().size());
 
-  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), vdata));
-  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), idata_ptr));
+  vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
+  ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), &idata));
 }
 
 
