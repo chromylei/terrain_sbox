@@ -1,6 +1,6 @@
-#include "tersbox/effect/shadowmap/shadowmap.h"
+#include "tersbox/effect/softshadow/shadowmap.h"
 
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/shadowmap/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/softshadow/"
 #define SHADER_NAME "shadowmap.afx"
 
 void ShadowmapGraphic::Init(azer::RenderSystem* rs) {

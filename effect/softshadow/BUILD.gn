@@ -1,22 +1,22 @@
 import("//build/templates/afx.gni")
 
-afx("tersbox_effect_shadowmap_effect") {
+afx("tersbox_effect_softshadow_effect") {
   source = "diffuse.afx"
   filename = "diffuse"
 }
 
-afx("tersbox_effect_shadowmap_effect2") {
+afx("tersbox_effect_softshadow_effect2") {
   source = "shadowmap.afx"
   filename = "shadowmap"
 }
 
-executable("tersbox_effect_shadowmap") {
+executable("tersbox_effect_softshadow") {
   sources = ["main.cc", "shadowmap.cc"]
   deps = ["//tersbox/base:tersbox_base",
           "//tersbox/effect/common:tersbox_effect_common",
           "//azer/render:render",
           "//base:appinit",
-          ":tersbox_effect_shadowmap_effect",
-          ":tersbox_effect_shadowmap_effect2",
+          ":tersbox_effect_softshadow_effect",
+          ":tersbox_effect_softshadow_effect2",
          ]
 }

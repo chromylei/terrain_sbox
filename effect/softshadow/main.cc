@@ -6,12 +6,12 @@
 #include "azer/util/util.h"
 #include "tersbox/effect/common/load.h"
 #include "tersbox/effect/common/object.h"
-#include "tersbox/effect/shadowmap/shadowmap.h"
+#include "tersbox/effect/softshadow/shadowmap.h"
 #include "tersbox/base/camera_control.h"
 #include "diffuse.afx.h"
 #include <tchar.h>
 
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/shadowmap/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/effect/softshadow/"
 #define SHADER_NAME "diffuse.afx"
 
 #define GROUND_PATH FILE_PATH_LITERAL("tersbox\\effect\\data\\ground.txt")
