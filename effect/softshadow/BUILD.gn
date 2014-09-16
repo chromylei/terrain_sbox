@@ -10,6 +10,11 @@ afx("tersbox_effect_softshadow_effect2") {
   filename = "shadowmap"
 }
 
+afx("tersbox_effect_softshadow_effect3") {
+  source = "hard_shadowmap.afx"
+  filename = "hard_shadowmap"
+}
+
 executable("tersbox_effect_softshadow") {
   sources = ["main.cc", "shadowmap.cc"]
   deps = ["//tersbox/base:tersbox_base",
@@ -18,5 +23,6 @@ executable("tersbox_effect_softshadow") {
           "//base:appinit",
           ":tersbox_effect_softshadow_effect",
           ":tersbox_effect_softshadow_effect2",
+          ":tersbox_effect_softshadow_effect3",
          ]
 }

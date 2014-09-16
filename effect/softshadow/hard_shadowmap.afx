@@ -1,0 +1,42 @@
+#include "afx/shadowmap.afxi"
+
+technique [
+    name = "hard_shadowmap"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="HardShadowmapEffect"
+           ];
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetShadowPVW"] uniform mat4 shadowmap_pvw;
+[uniform_func="SetShadowmapTexture"] uniform Texture2D shadowmap_tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec4 sm_position;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+  vec3 normal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.sm_position = shadowmap_pvw * vec4(input.position, 1.0);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  if (afx::InShadow(shadowmap_tex, o.sm_position)) {
+    return vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  } else {
+    return vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  }
+}
+
