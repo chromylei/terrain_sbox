@@ -6,12 +6,12 @@ afx("tersbox_tertur_bitmapclouds_effect") {
 }
 
 afx("tersbox_tertur_bitmapclouds_effect2") {
-  source = "skydomes.afx"
-  filename = "skydomes"
+  source = "skyplane.afx"
+  filename = "skyplane"
 }
 
 executable("tersbox_tertur_bitmapclouds") {
-  sources = ["main.cc", "skydomes.cc"]
+  sources = ["main.cc", "skyplane.cc"]
   deps = ["//tersbox/base:tersbox_base",
           "//tersbox/effect/common:tersbox_effect_common",
           "//azer/render:render",
