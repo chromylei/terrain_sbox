@@ -1,0 +1,57 @@
+#include "afx/projmap.afxi"
+
+technique [
+    name = "diffuse"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="DiffuseEffect"
+           ];
+
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetDiffuse"] uniform vec4 diffuse;
+[uniform_func="SetTexture"] uniform Texture2D tex;
+[uniform_func="SetProjLightPVW"] uniform mat4 projlight_pvw;
+[uniform_func="SetProjLightTexture"] uniform Texture2D projlight_tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 texcoord;
+  vec4 normal;
+  vec4 proj_position;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+  vec3 normal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.normal = world * vec4(input.normal, 0.0);
+  o.texcoord = input.texcoord;
+  o.proj_position = projlight_pvw * vec4(input.position, 1.0);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  float diffuse_factor =  dot(normalize(o.normal.xyz), -light.dir.xyz);
+  diffuse_factor = clamp(diffuse_factor, 0.0f, 1.0f);
+  vec4 projlight = afx::SampleProjmap(o.proj_position, projlight_tex);
+  vec4 tex_diffuse = sample2D(tex, o.texcoord);
+  vec4 color = projlight * tex_diffuse * light.diffuse * diffuse_factor
+      + tex_diffuse * light.ambient;
+  return color;
+}
+
