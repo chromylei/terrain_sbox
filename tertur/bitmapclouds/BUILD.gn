@@ -1,0 +1,16 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_tertur_bitmapclouds_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+executable("tersbox_tertur_bitmapclouds") {
+  sources = ["main.cc"]
+  deps = ["//tersbox/base:tersbox_base",
+          "//tersbox/effect/common:tersbox_effect_common",
+          "//azer/render:render",
+          "//base:appinit",
+          ":tersbox_tertur_bitmapclouds_effect",
+         ]
+}

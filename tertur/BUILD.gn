@@ -1,6 +1,8 @@
 
 
 group("tersbox_tertur") {
-  deps = ["skydomes:tersbox_tertur_skydomes",
+  deps = [
+    "skydomes:tersbox_tertur_skydomes",
+    "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
 }

@@ -6,11 +6,10 @@
 #include "azer/util/util.h"
 #include "tersbox/effect/common/load.h"
 #include "tersbox/base/camera_control.h"
-#include "tersbox/tertur/skydomes/skydomes.h"
 #include "diffuse.afx.h"
 #include <tchar.h>
 
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/skydomes/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/bitmapclouds/"
 #define SHADER_NAME "diffuse.afx"
 #define TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\seafloor.dds")
 #define CUBEPATH FILE_PATH_LITERAL("tersbox\\effect\\data\\cube.txt")
@@ -35,7 +34,6 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Matrix4 world_;
   azer::Camera camera_;
   azer::TexturePtr tex_;
-  SkyDomes skydomes_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -55,7 +53,6 @@ void MainDelegate::Init() {
   light_.dir = azer::Vector4(0.0f, -0.4f, -0.4f, 1.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
-  skydomes_.Init(rs);
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -83,8 +80,6 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetTexture(tex_);
   effect_->Use(renderer);
   renderer->Draw(vb_.get(), azer::kTriangleList);
-
-  skydomes_.Render(camera_, renderer);
 }
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {

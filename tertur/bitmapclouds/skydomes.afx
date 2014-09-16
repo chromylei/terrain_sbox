@@ -1,0 +1,35 @@
+technique [
+    name = "skydomes"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="SkyDomesEffect"
+           ];
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetTexture"] uniform Texture2D tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 texcoord;
+  vec4 normal;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+  vec3 normal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.texcoord = input.texcoord;
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  return sample2D(tex, o.texcoord);
+}
+
