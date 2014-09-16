@@ -5,12 +5,18 @@ afx("tersbox_tertur_bitmapclouds_effect") {
   filename = "diffuse"
 }
 
+afx("tersbox_tertur_bitmapclouds_effect2") {
+  source = "skydomes.afx"
+  filename = "skydomes"
+}
+
 executable("tersbox_tertur_bitmapclouds") {
-  sources = ["main.cc"]
+  sources = ["main.cc", "skydomes.cc"]
   deps = ["//tersbox/base:tersbox_base",
           "//tersbox/effect/common:tersbox_effect_common",
           "//azer/render:render",
           "//base:appinit",
           ":tersbox_tertur_bitmapclouds_effect",
+          ":tersbox_tertur_bitmapclouds_effect2",
          ]
 }

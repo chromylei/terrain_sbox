@@ -12,7 +12,7 @@ class SkyDomes {
   SkyDomes() {}
 
   bool Init(azer::RenderSystem* rs);
-  void Render(azer::Renderer* renderer);
+  void Render(const azer::Camera& camera, azer::Renderer* renderer);
  private:
   azer::VertexBuffer* LoadVertex(const ::base::FilePath& path,
                                  azer::RenderSystem* rs);

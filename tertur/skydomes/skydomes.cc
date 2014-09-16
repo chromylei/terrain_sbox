@@ -4,7 +4,7 @@
 #include "azer/util/util.h"
 #include "tersbox/effect/common/load.h"
 
-#define SPHERE_PATH FILE_PATH_LITERAL("tersbox\\effect\\data\\sphere.txt")
+#define SPHERE_PATH FILE_PATH_LITERAL("tersbox\\tertur\\model\\skydome.txt")
 #define SKYTEX_PATH FILE_PATH_LITERAL("samples\\resources\\texture\\marble01.dds")
 
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/skydomes/"

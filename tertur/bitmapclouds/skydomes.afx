@@ -6,13 +6,16 @@ technique [
            ];
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
-[uniform_func="SetTexture"] uniform Texture2D tex;
+[uniform_func="SetApexColor"] uniform vec4 apex_color;
+[uniform_func="SetCenterColor"] uniform vec4 center_color;
+
 
 exchange struct VsOutput {
   [semantic="position" system="true"]
   vec4 position;
   vec2 texcoord;
   vec4 normal;
+  vec4 position2;
 };
 
 exchange struct VSInput {
@@ -25,11 +28,14 @@ VsOutput vs_main(VSInput input) {
   VsOutput o;
   o.position = pvw * vec4(input.position, 1.0);
   o.texcoord = input.texcoord;
+  o.position2 = pvw * vec4(input.position, 1.0);
   return o;
 }
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
-  return sample2D(tex, o.texcoord);
+  float height = clamp(o.position2.y / o.position2.w, 0.0f, 1.0f);
+  vec4 color = lerp(center_color, apex_color, height);
+  return color;
 }
 
