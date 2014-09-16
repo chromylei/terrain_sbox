@@ -23,12 +23,12 @@
 using base::FilePath;
 
 void Draw(const azer::Camera& camera, DiffuseEffect* effect,
-          const azer::Matrix4& smpv, azer::Renderer* renderer, Object* obj) {
+          const azer::Matrix4& smpv1, azer::Renderer* renderer, Object* obj) {
   azer::Matrix4& pvw = std::move(camera.GetProjViewMatrix() * obj->world());
-  azer::Matrix4& sm_pvw = std::move(smpv * obj->world());
+  azer::Matrix4& sm_pvw1 = std::move(smpv1 * obj->world());
   effect->SetPVW(pvw);
   effect->SetWorld(obj->world());
-  effect->SetShadowPVW(sm_pvw);
+  effect->SetShadowPVW1(sm_pvw1);
   effect->SetDiffuse(azer::Vector4(0.8f, 0.8f, 0.8f, 1.0f));
   effect->SetTexture(obj->tex());
   effect->Use(renderer);
@@ -61,9 +61,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   ObjectPtr sphere_;
   ObjectPtr ground_;
   std::unique_ptr<DiffuseEffect> effect_;
-  DiffuseEffect::DirLight light_;
+  DiffuseEffect::DirLight light1_;
   azer::Camera camera_;
-  ShadowmapGraphic shadowmap_;
+  ShadowmapGraphic shadowmap1_;
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
@@ -83,25 +83,24 @@ void MainDelegate::Init() {
   camera_.SetPosition(azer::Vector3(0.0f, 6.0f, -8.0));
   camera_.SetLookAt(azer::Vector3(.0f, 0.0f, 0.0f));
 
-  light_.dir = azer::Vector4(0.0f, -0.4f, -0.4f, 1.0f);
-  light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-  light_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
+  light1_.dir = azer::Vector4(0.0f, -0.4f, -0.4f, 1.0f);
+  light1_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+  light1_.ambient = azer::Vector4(0.3f, 0.30f, 0.30f, 1.0f);
 
   azer::Plane plane(azer::Vector3(1.0f, 2.75f, 1.0f),
                     azer::Vector3(1.0f, 2.75f, 0.0f),
                     azer::Vector3(0.0f, 2.75f, 1.0f));
-  shadowmap_.Init(rs);
+  shadowmap1_.Init(rs);
+  shadowmap1_.GetLightCamera().SetPosition(azer::Vector3(0.0f, 4.0f, 4.0));
+  shadowmap1_.GetLightCamera().SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
 
-  effect_->SetDirLight(light_);
+  effect_->SetDirLight1(light1_);
   azer::Matrix4 world = azer::Translate(-3.0f, 1.0f, 0.0f);
   cube_->SetWorld(world);
   world = azer::Translate(3.0f, 1.0f, 0.0f);
   sphere_->SetWorld(world);
   world = azer::Translate(0.0f, 0.0f, 0.0f) * azer::Scale(0.4f, 0.4f, 0.4f);
   ground_->SetWorld(world);
-
-  shadowmap_.GetLightCamera().SetPosition(azer::Vector3(4.0f, 6.0f, -1.0));
-  shadowmap_.GetLightCamera().SetLookAt(azer::Vector3(.0f, 0.0f, 0.0f));
 }
 
 void MainDelegate::InitRenderSystem(azer::RenderSystem* rs) {
@@ -120,24 +119,21 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   azer::Renderer* renderer = rs->GetDefaultRenderer();
 
-  ShadowmapEffect* effect = shadowmap_.GetEffect();
-  azer::Renderer* shadowmap_rd = shadowmap_.Begin(renderer);
-  Draw(shadowmap_.GetLightCamera(), effect,
-                        shadowmap_rd, cube_.get());
-  Draw(shadowmap_.GetLightCamera(), effect,
-                        shadowmap_rd, sphere_.get());
-  Draw(shadowmap_.GetLightCamera(), effect,
-                        shadowmap_rd, ground_.get());
-  shadowmap_.End();
+  ShadowmapEffect* effect = shadowmap1_.GetEffect();
+  azer::Renderer* shadowmap_rd = shadowmap1_.Begin(renderer);
+  Draw(shadowmap1_.GetLightCamera(), effect, shadowmap_rd, cube_.get());
+  Draw(shadowmap1_.GetLightCamera(), effect, shadowmap_rd, sphere_.get());
+  Draw(shadowmap1_.GetLightCamera(), effect, shadowmap_rd, ground_.get());
+  shadowmap1_.End();
 
   renderer->Use();
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
-  effect_->SetShadowmapTexture(shadowmap_.GetShadowmap());
+  effect_->SetShadowmapTexture1(shadowmap1_.GetShadowmap());
   
-  Draw(camera_, effect_.get(), shadowmap_.GetLightPVMat(), renderer, cube_.get());
-  Draw(camera_, effect_.get(), shadowmap_.GetLightPVMat(), renderer, sphere_.get());
-  Draw(camera_, effect_.get(), shadowmap_.GetLightPVMat(), renderer, ground_.get());
+  Draw(camera_, effect_.get(), shadowmap1_.GetLightPVMat(), renderer, cube_.get());
+  Draw(camera_, effect_.get(), shadowmap1_.GetLightPVMat(), renderer, sphere_.get());
+  Draw(camera_, effect_.get(), shadowmap1_.GetLightPVMat(), renderer, ground_.get());
 }
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
