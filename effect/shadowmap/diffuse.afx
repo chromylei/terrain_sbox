@@ -13,11 +13,9 @@ struct DirLight {
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
 [uniform_func="SetWorld"] uniform mat4 world;
-
+[uniform_func="SetDirLight"] uniform DirLight light;
 [uniform_func="SetDiffuse"] uniform vec4 diffuse;
 [uniform_func="SetTexture"] uniform Texture2D tex;
-
-[uniform_func="SetDirLight"] uniform DirLight light;
 [uniform_func="SetShadowPVW"] uniform mat4 shadowmap_pvw;
 [uniform_func="SetShadowmapTexture"] uniform Texture2D shadowmap_tex;
 
@@ -44,24 +42,6 @@ VsOutput vs_main(VSInput input) {
   return o;
 }
 
-bool InShadow(vec4 sm_position, Texture2D sm) {
-  vec2 sm_texcoord;
-  sm_texcoord.x = sm_position.x / sm_position.w / 2.0f + 0.5f;
-  sm_texcoord.y = sm_position.y / sm_position.w / 2.0f + 0.5f;
-  float depth = sm_position.z / sm_position.w;
-  if (sm_texcoord.x > 0.0 && sm_texcoord.x < 1.0
-      && sm_texcoord.y > 0.0 && sm_texcoord.y < 1.0) {
-    vec4 sm_depth = sample2D(sm, sm_texcoord);
-    if (depth > sm_depth.r + 0.00001) {
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
-
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
   vec4 tex_diffuse = sample2D(tex, o.texcoord);
@@ -70,8 +50,17 @@ vec4 ps_main(VsOutput o) {
   vec3 light_factor = vec3(0, 0, 0);
   
   float depth = o.sm_position.z / o.sm_position.w;
-  if (InShadow(o.sm_position, shadowmap_tex)) {
-    light_factor = light.ambient.xyz;
+  vec2 sm_texcoord;
+  sm_texcoord.x = o.sm_position.x / o.sm_position.w / 2.0f + 0.5f;
+  sm_texcoord.y = -o.sm_position.y / o.sm_position.w / 2.0f + 0.5f;
+  if (sm_texcoord.x > 0.0 && sm_texcoord.x < 1.0
+      && sm_texcoord.y > 0.0 && sm_texcoord.y < 1.0) {
+    vec4 sm_depth = sample2D(shadowmap_tex, sm_texcoord);
+    if (depth > sm_depth.r + 0.0001) {
+      light_factor = light.ambient.xyz;
+    } else {
+      light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
+    }
   } else {
     light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
   }
