@@ -1,0 +1,6 @@
+
+
+group("tersbox_tertur") {
+  deps = ["skydomes:tersbox_tertur_skydomes",
+  ]
+}
