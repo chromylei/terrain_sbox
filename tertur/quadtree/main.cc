@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tersbox/base/camera_control.h"
+#include "tersbox/base/cubeframe.h"
 
 #include <tchar.h>
 
@@ -14,6 +15,19 @@
 #define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
 #define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt01.dds")
 using base::FilePath;
+
+class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
+ public:
+  virtual SplitRes Split(const azer::Tile::QuadTree::Node& node) {
+    if (node.level > 8) {
+      return kSplit;
+    } else if (node.level == 8) {
+      return kKeep;
+    } else {
+      return kDrop;
+    }
+  }
+};
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
@@ -35,6 +49,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::TexturePtr tex_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
+  CubeFrame cubeframe_;
+  std::vector<azer::Tile::Pitch> pitches_;
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -63,8 +79,13 @@ void MainDelegate::Init() {
   light_.dir = azer::Vector4(-0.5f, -1.0f, 0.0f, 0.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.05f, 0.05f, 0.05f, 1.0f);
-}
 
+  cubeframe_.Init(rs);
+
+  QuadTreeSplit splitable;
+  azer::Tile::QuadTree tree(tile_.level());
+  tree.Split(8, &splitable, &pitches_);
+}
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
@@ -97,7 +118,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
-  azer::Radians camera_speed(azer::kPI / 2.0f);
+  azer::Radians camera_speed(azer::kPI * 10.0f / 2.0f);
   UpdatedownCamera(&camera_, camera_speed, delta_time);
 }
 
@@ -116,6 +137,17 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetTexture(tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+
+  cubeframe_.SetWorldMatrix(azer::Matrix4::kIdentity);
+  cubeframe_.SetPVMatrix(camera_.GetProjViewMatrix());
+  for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
+    const azer::Tile::Pitch& pitch = *iter;
+    azer::Vector3 minpos = tile_.vertex(pitch.left, pitch.top);
+    minpos.y = 0.0f;
+    azer::Vector3 maxpos = tile_.vertex(pitch.right, pitch.bottom);
+    maxpos.y = 20.0f;
+    cubeframe_.Render(minpos, maxpos, renderer);
+  }
 }
 
 int main(int argc, char* argv[]) {
