@@ -5,6 +5,7 @@ group("tersbox_tertur") {
     "grid:tersbox_tertur_grid",
     "heightmap:tersbox_tertur_heightmap",
     "terlight:tersbox_tertur_terlight",
+    "texture:tersbox_tertur_texture",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
