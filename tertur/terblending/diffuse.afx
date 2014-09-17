@@ -1,0 +1,53 @@
+technique [
+    name = "diffuse"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="DiffuseEffect"
+           ];
+
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetTexture"] uniform Texture2D tex;
+[uniform_func="SetColorMap"] uniform Texture2D colormap;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 tex0;
+  vec2 tex1;
+  vec4 normal;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 tex0;
+  vec2 tex1;
+  vec3 normal;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0f);
+  o.normal = world * vec4(input.normal, 0.0);
+  o.tex0 = input.tex0;
+  o.tex1 = input.tex1;
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  vec4 tex_color = sample2D(tex, o.tex0);
+  vec4 colorm = sample2D(colormap, o.tex1);
+  float diffuse_factor = clamp(dot(normalize(o.normal.xyz), -light.dir.xyz),
+                               0.0, 1.0);
+  vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
+  return vec4(light_factor.xyz, 1.0) * (tex_color * colorm * 2.0f);
+}
+

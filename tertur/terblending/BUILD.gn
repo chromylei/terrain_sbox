@@ -1,0 +1,17 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_tertur_terblending_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+
+executable("tersbox_tertur_terblending") {
+  sources = ["main.cc"]
+  deps = ["//azer/render:render",
+          "//azer/util:azer_util",
+          "//tersbox/base:tersbox_base",
+          "//base:appinit",
+          ":tersbox_tertur_terblending_effect",
+         ]
+}
