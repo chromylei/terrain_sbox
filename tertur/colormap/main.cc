@@ -14,6 +14,7 @@
 #define SHADER_NAME "diffuse.afx"
 #define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
 #define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt01.dds")
+#define COLOR_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/colorm01.bmp")
 using base::FilePath;
 
 class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
@@ -47,6 +48,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
   azer::TexturePtr tex_;
+  azer::TexturePtr color_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   CubeFrame cubeframe_;
@@ -69,6 +71,7 @@ void MainDelegate::Init() {
 
   heightmap_.reset(azer::Image::Load(HEIGHTMAP));
   tex_.reset(azer::Texture::CreateShaderTexture(TERTEX, rs));
+  color_tex_.reset(azer::Texture::CreateShaderTexture(COLOR_TERTEX, rs));
 
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
@@ -105,16 +108,24 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
 
   DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata.pointer();
   DiffuseEffect::Vertex* v = vertex;
-  for (int i = 0; i < tile_.GetVertexNum(); ++i) {
-    v->position = tile_.vertices()[i];
-    v->normal = tile_.normal()[i];
-    v++;
+  int cnt = 0;
+  float repeat_num = 10.0f;
+  for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
+    for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
+      v->position = tile_.vertices()[cnt];
+      v->normal = tile_.normal()[cnt];
+      azer::Vector2 texcoord((float)j / (float)tile_.GetGridLineNum(),
+                             (float)i / (float)tile_.GetGridLineNum());
+      v->tex0 = texcoord * repeat_num;
+      v->tex1 = texcoord;
+      v++;
+      cnt++;
+    }
   }
 
   vb_.reset(rs->CreateVertexBuffer(azer::VertexBuffer::Options(), &vdata));
   ib_.reset(rs->CreateIndicesBuffer(azer::IndicesBuffer::Options(), &idata));
 }
-
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
   float rspeed = 3.14f * 2.0f / 4.0f;
@@ -147,6 +158,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
   effect_->SetTexture(tex_);
+  effect_->SetColorMap(color_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
