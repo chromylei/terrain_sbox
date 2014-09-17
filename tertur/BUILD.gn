@@ -3,6 +3,7 @@
 group("tersbox_tertur") {
   deps = [
     "grid:tersbox_tertur_grid",
+    "heightmap:tersbox_tertur_heightmap",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
