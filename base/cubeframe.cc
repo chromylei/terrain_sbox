@@ -17,7 +17,7 @@ void CubeFrame::Init(azer::RenderSystem* rs) {
     azer::Vector4(-0.5f, -0.5f,  0.5f, 1.0f),
     azer::Vector4( 0.5f, -0.5f,  0.5f, 1.0f),
     azer::Vector4( 0.5f, -0.5f, -0.5f, 1.0f),
-    azer::Vector4(-0.5f, -0.5f, -0.0f, 1.0f),
+    azer::Vector4(-0.5f, -0.5f, -0.5f, 1.0f),
     azer::Vector4(-0.5f,  0.5f,  0.5f, 1.0f),
     azer::Vector4( 0.5f,  0.5f,  0.5f, 1.0f),
     azer::Vector4( 0.5f,  0.5f, -0.5f, 1.0f),
@@ -48,7 +48,7 @@ void CubeFrame::Render(const azer::Vector3& pos1, const azer::Vector3& pos2,
                                    std::max(pos1.y, pos2.y),
                                    std::max(pos1.z, pos2.z));
   azer::Vector3 scale = p2 - p1;
-  azer::Vector3 pos = (p2 - p1) / 2.0f;
+  azer::Vector3 pos = (p2 + p1) / 2.0f;
   azer::Matrix4 s = std::move(azer::Scale(scale));
   azer::Matrix4 trans = std::move(azer::Translate(pos));
   azer::Matrix4 world = std::move(world_ * std::move(trans * s));

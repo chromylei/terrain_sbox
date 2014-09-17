@@ -19,9 +19,9 @@ using base::FilePath;
 class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
  public:
   virtual SplitRes Split(const azer::Tile::QuadTree::Node& node) {
-    if (node.level > 8) {
+    if (node.level > 7) {
       return kSplit;
-    } else if (node.level == 8) {
+    } else if (node.level == 7) {
       return kKeep;
     } else {
       return kDrop;
@@ -84,7 +84,7 @@ void MainDelegate::Init() {
 
   QuadTreeSplit splitable;
   azer::Tile::QuadTree tree(tile_.level());
-  tree.Split(8, &splitable, &pitches_);
+  tree.Split(&splitable, &pitches_);
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -140,6 +140,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
 
   cubeframe_.SetWorldMatrix(azer::Matrix4::kIdentity);
   cubeframe_.SetPVMatrix(camera_.GetProjViewMatrix());
+  cubeframe_.SetDiffuse(azer::Vector4(1, 0, 0, 1));
   for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
     const azer::Tile::Pitch& pitch = *iter;
     azer::Vector3 minpos = tile_.vertex(pitch.left, pitch.top);
