@@ -2,6 +2,7 @@
 
 group("tersbox_tertur") {
   deps = [
+    "grid:tersbox_tertur_grid",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
