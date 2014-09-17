@@ -9,6 +9,7 @@ group("tersbox_tertur") {
     "quadtree:tersbox_tertur_quadtree",
     "move:tersbox_tertur_move",
     "colormap:tersbox_tertur_colormap",
+    "terblending:tersbox_tertur_terblending",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
