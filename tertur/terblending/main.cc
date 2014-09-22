@@ -13,8 +13,10 @@
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/terblending/"
 #define SHADER_NAME "diffuse.afx"
 #define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
-#define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt01.dds")
-#define COLOR_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/colorm01.bmp")
+#define TERTEX0  FILE_PATH_LITERAL("tersbox/tertur/media/texture01.dds")
+#define TERTEX1  FILE_PATH_LITERAL("tersbox/tertur/media/texture02.dds")
+#define MATERIAL_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/materialmap01.bmp")
+#define COLORMAP_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/colorm01.bmp")
 using base::FilePath;
 
 class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
@@ -47,8 +49,10 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
-  azer::TexturePtr tex_;
-  azer::TexturePtr color_tex_;
+  azer::TexturePtr tex0_;
+  azer::TexturePtr tex1_;
+  azer::TexturePtr material_tex_;
+  azer::TexturePtr colormap_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   CubeFrame cubeframe_;
@@ -70,8 +74,10 @@ void MainDelegate::Init() {
   tile_.Init();
 
   heightmap_.reset(azer::Image::Load(HEIGHTMAP));
-  tex_.reset(azer::Texture::CreateShaderTexture(TERTEX, rs));
-  color_tex_.reset(azer::Texture::CreateShaderTexture(COLOR_TERTEX, rs));
+  tex0_.reset(azer::Texture::CreateShaderTexture(TERTEX0, rs));
+  tex1_.reset(azer::Texture::CreateShaderTexture(TERTEX1, rs));
+  material_tex_.reset(azer::Texture::CreateShaderTexture(MATERIAL_TERTEX, rs));
+  colormap_tex_.reset(azer::Texture::CreateShaderTexture(COLORMAP_TERTEX, rs));
 
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
@@ -157,8 +163,10 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
-  effect_->SetTexture(tex_);
-  effect_->SetColorMap(color_tex_);
+  effect_->SetTexture0(tex0_);
+  effect_->SetTexture1(tex1_);
+  effect_->SetMaterialMap(material_tex_);
+  effect_->SetColorMap(colormap_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
