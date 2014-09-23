@@ -12,10 +12,9 @@
 #include "diffuse.afx.h"
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/terbump/"
 #define SHADER_NAME "diffuse.afx"
-#define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap02.bmp")
-#define GRASS_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/grass.dds")
-#define ROCK_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/rock.dds")
-#define SLOPE_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/slope.dds")
+#define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
+#define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt.dds")
+#define BUMP_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt_bump.dds")
 using base::FilePath;
 
 class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
@@ -33,7 +32,7 @@ class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() : tile_(8, 0.2f) {
+  MainDelegate() : tile_(9, 0.2f) {
   }
   virtual void OnCreate() {}
 
@@ -48,9 +47,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
-  azer::TexturePtr grass_tex_;
-  azer::TexturePtr rock_tex_;
-  azer::TexturePtr slope_tex_;
+  azer::TexturePtr tex_;
+  azer::TexturePtr bump_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   CubeFrame cubeframe_;
@@ -67,14 +65,13 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   // renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 20.0f, 80.0f));
-  camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 3.0f, 0.0f));
+  camera_.SetLookAt(azer::Vector3(0.0f, 3.0f, -3.0f));
   tile_.Init();
 
   heightmap_.reset(azer::Image::Load(HEIGHTMAP));
-  grass_tex_.reset(azer::Texture::LoadShaderTexture(GRASS_TERTEX, rs));
-  rock_tex_.reset(azer::Texture::LoadShaderTexture(ROCK_TERTEX, rs));
-  slope_tex_.reset(azer::Texture::LoadShaderTexture(SLOPE_TERTEX, rs));
+  tex_.reset(azer::Texture::LoadShaderTexture(TERTEX, rs));
+  bump_tex_.reset(azer::Texture::LoadShaderTexture(BUMP_TERTEX, rs));
 
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
@@ -94,6 +91,7 @@ void MainDelegate::Init() {
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
+  float repeat_num = 20.0f;
   azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
   azer::IndicesData idata(tile_.indices().size(), azer::IndicesData::kUint32);
   memcpy(idata.pointer(), &(tile_.indices()[0]),
@@ -107,19 +105,21 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
       tile_.SetHeight(j, i, height * 0.5f);
     }
   }
+
+  std::vector<azer::Vector3> tangent, binormal;
   tile_.CalcNormal();
+  tile_.CalcTBN(repeat_num, &tangent, &binormal);
 
   DiffuseEffect::Vertex* vertex = (DiffuseEffect::Vertex*)vdata.pointer();
   DiffuseEffect::Vertex* v = vertex;
   int cnt = 0;
-  float repeat_num = 30.0f;
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       v->position = tile_.vertices()[cnt];
+      v->tex0 = tile_.texcoord()[cnt] * repeat_num;
       v->normal = tile_.normal()[cnt];
-      azer::Vector2 texcoord((float)j / (float)tile_.GetGridLineNum(),
-                             (float)i / (float)tile_.GetGridLineNum());
-      v->tex0 = texcoord * repeat_num;
+      v->binormal = binormal[cnt];
+      v->tangent = tangent[cnt];
       v++;
       cnt++;
     }
@@ -160,9 +160,8 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
-  effect_->SetGrassTex(grass_tex_);
-  effect_->SetSlopeTex(slope_tex_);
-  effect_->SetRockTex(rock_tex_);
+  effect_->SetTexture(tex_);
+  effect_->SetBumpTex(bump_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
