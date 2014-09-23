@@ -53,7 +53,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::vector<azer::TexturePtr> tex_;
   std::vector<azer::TexturePtr> alpha_;
   azer::TexturePtr material_tex_;
-  azer::TexturePtr colormap_tex_;
+  azer::Texture::SamplerState material_sampler_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   CubeFrame cubeframe_;
@@ -87,7 +87,7 @@ void MainDelegate::Init() {
     alpha_.push_back(tex);
   }
   material_tex_.reset(azer::Texture::CreateShaderTexture(MATERIAL_TERTEX, rs));
-  colormap_tex_.reset(azer::Texture::CreateShaderTexture(COLORMAP_TERTEX, rs));
+  material_tex_->SetSamplerState(material_sampler_);
 
   azer::ShaderArray shaders;
   CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
