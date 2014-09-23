@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "azer/render/render.h"
 #include "azer/math/math.h"
 #include "azer/util/util.h"
@@ -54,6 +56,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::vector<azer::TexturePtr> alpha_;
   azer::TexturePtr material_tex_;
   azer::Texture::SamplerState material_sampler_;
+  azer::Texture::SamplerState default_sampler_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
   CubeFrame cubeframe_;
@@ -61,6 +64,18 @@ class MainDelegate : public azer::WindowHost::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
+
+float SampleHeight(azer::Image* image, float x, float y) {
+  int x1 = std::max((int)std::floor(x), 0);
+  int x2 = std::min((int)std::ceil(x), image->width() - 1);
+  int y1 = std::max((int)std::floor(y), 0);
+  int y2 = std::min((int)std::ceil(y), image->width() - 1);
+  float height = (image->pixel(x1, y1) & 0x000000FF)
+      + (image->pixel(x1, y2) & 0x000000FF)
+      + (image->pixel(x2, y1) & 0x000000FF)
+      + (image->pixel(x2, y2) & 0x000000FF);
+  return height / 4.0f;
+}
 
 void MainDelegate::Init() {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
@@ -70,23 +85,34 @@ void MainDelegate::Init() {
   CHECK(renderer->GetCullingMode() == azer::kCullBack);
   // renderer->SetFillMode(azer::kWireFrame);
   renderer->EnableDepthTest(true);
-  camera_.SetPosition(azer::Vector3(0.0f, 20.0f, 80.0f));
-  camera_.SetLookAt(azer::Vector3(0.0f, 0.0f, 0.0f));
+  camera_.SetPosition(azer::Vector3(0.0f, 3.0f, 3.0f));
+  camera_.SetLookAt(azer::Vector3(0.0f, 3.0f, 0.0f));
   tile_.Init();
 
   heightmap_.reset(azer::Image::Load(HEIGHTMAP));
+  material_sampler_.mag_filter = azer::Texture::kPoint;
+  material_sampler_.min_filter = azer::Texture::kPoint;
+  material_sampler_.mip_filter = azer::Texture::kPoint;
+  default_sampler_.mag_filter = azer::Texture::kLinear;
+  default_sampler_.min_filter = azer::Texture::kLinear;
+  default_sampler_.mip_filter = azer::Texture::kLinear;
 
   for (int i = 0; i < 3; ++i) {
     FilePath::StringType path = ::base::StringPrintf(TERTEX, i + 1);
-    azer::TexturePtr tex(azer::Texture::CreateShaderTexture(path, rs));
+    azer::TexturePtr tex(azer::Texture::LoadShaderTexture(path, rs));
+    tex->GenerateMips(7);
+    tex->SetSamplerState(default_sampler_);
     tex_.push_back(tex);
   }
   for (int i = 0; i < 4; ++i) {
     FilePath::StringType path = ::base::StringPrintf(ALPHATEX, i + 1);
-    azer::TexturePtr tex(azer::Texture::CreateShaderTexture(path, rs));
+    azer::TexturePtr tex(azer::Texture::LoadShaderTexture(path, rs));
+    tex->GenerateMips(-1);
+    tex->SetSamplerState(default_sampler_);
     alpha_.push_back(tex);
+    
   }
-  material_tex_.reset(azer::Texture::CreateShaderTexture(MATERIAL_TERTEX, rs));
+  material_tex_.reset(azer::Texture::LoadShaderTexture(MATERIAL_TERTEX, rs));
   material_tex_->SetSamplerState(material_sampler_);
 
   azer::ShaderArray shaders;
@@ -114,9 +140,9 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       azer::Vector3 pos = tile_.vertex(j, i);
-      int x = heightmap_->width() * ((float)j / (float)tile_.GetGridLineNum());
-      int y = heightmap_->width() * ((float)i / (float)tile_.GetGridLineNum());
-      float height = (float)(heightmap_->pixel(x, y) & 0x000000FF) * 0.1f;
+      float x = heightmap_->width() * ((float)j / (float)tile_.GetGridLineNum());
+      float y = heightmap_->width() * ((float)i / (float)tile_.GetGridLineNum());
+      float height = SampleHeight(heightmap_.get(), x, y) * 0.1f;
       tile_.SetHeight(j, i, height * 0.5f);
     }
   }
@@ -184,6 +210,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
+  /*
   cubeframe_.SetWorldMatrix(azer::Matrix4::kIdentity);
   cubeframe_.SetPVMatrix(camera_.GetProjViewMatrix());
   cubeframe_.SetDiffuse(azer::Vector4(1, 0, 0, 1));
@@ -195,6 +222,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
     maxpos.y = 20.0f;
     cubeframe_.Render(minpos, maxpos, renderer);
   }
+  */
 }
 
 int main(int argc, char* argv[]) {

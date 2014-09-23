@@ -57,18 +57,20 @@ vec4 ps_main(VsOutput o) {
     color0 = sample2D(tex0, o.tex0);
     color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-  } else if (length(material.xyz - vec3(1.0f, 0.0f, 0.0f)) < 0.3) {
+  } else if (length(material.xyz - vec3(1.0f, 0.0f, 0.0f)) < 0.1) {
     color0 = sample2D(tex1, o.tex0);
     color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-  } else if (length(material.xyz - vec3(0.0f, 0.0f, 1.0f)) < 0.3) {
+  } else if (length(material.xyz - vec3(0.0f, 0.0f, 1.0f)) < 0.1) {
     color0 = sample2D(tex1, o.tex0);
     color1 = sample2D(tex0, o.tex0);
     blend_factor = sample2D(alpha1, o.tex0);
-  } else if (length(material.xyz - vec3(0.0f, 1.0f, 1.0f)) < 0.3) {
+    // blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  } else if (length(material.xyz - vec3(0.0f, 1.0f, 1.0f)) < 0.1) {
     color0 = sample2D(tex1, o.tex0);
     color1 = sample2D(tex0, o.tex0);
     blend_factor = sample2D(alpha0, o.tex0);
+    // blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
   } else if (length(material.xyz - vec3(1.0f, 1.0f, 1.0f)) < 0.3) {
     color0 = sample2D(tex2, o.tex0);
     color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
