@@ -4,6 +4,7 @@
 #include "base/base.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/cubeframe.h"
 
@@ -13,8 +14,8 @@
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/terblending/"
 #define SHADER_NAME "diffuse.afx"
 #define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
-#define TERTEX0  FILE_PATH_LITERAL("tersbox/tertur/media/texture01.dds")
-#define TERTEX1  FILE_PATH_LITERAL("tersbox/tertur/media/texture02.dds")
+#define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/texture0%d.dds")
+#define ALPHATEX  FILE_PATH_LITERAL("tersbox/tertur/media/alpha0%d.dds")
 #define MATERIAL_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/materialmap01.bmp")
 #define COLORMAP_TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/colorm01.bmp")
 using base::FilePath;
@@ -49,8 +50,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   azer::ImagePtr heightmap_;
-  azer::TexturePtr tex0_;
-  azer::TexturePtr tex1_;
+  std::vector<azer::TexturePtr> tex_;
+  std::vector<azer::TexturePtr> alpha_;
   azer::TexturePtr material_tex_;
   azer::TexturePtr colormap_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
@@ -74,8 +75,17 @@ void MainDelegate::Init() {
   tile_.Init();
 
   heightmap_.reset(azer::Image::Load(HEIGHTMAP));
-  tex0_.reset(azer::Texture::CreateShaderTexture(TERTEX0, rs));
-  tex1_.reset(azer::Texture::CreateShaderTexture(TERTEX1, rs));
+
+  for (int i = 0; i < 3; ++i) {
+    FilePath::StringType path = ::base::StringPrintf(TERTEX, i + 1);
+    azer::TexturePtr tex(azer::Texture::CreateShaderTexture(path, rs));
+    tex_.push_back(tex);
+  }
+  for (int i = 0; i < 4; ++i) {
+    FilePath::StringType path = ::base::StringPrintf(ALPHATEX, i + 1);
+    azer::TexturePtr tex(azer::Texture::CreateShaderTexture(path, rs));
+    alpha_.push_back(tex);
+  }
   material_tex_.reset(azer::Texture::CreateShaderTexture(MATERIAL_TERTEX, rs));
   colormap_tex_.reset(azer::Texture::CreateShaderTexture(COLORMAP_TERTEX, rs));
 
@@ -163,10 +173,14 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
-  effect_->SetTexture0(tex0_);
-  effect_->SetTexture1(tex1_);
+  effect_->SetTexture0(tex_[0]);
+  effect_->SetTexture1(tex_[1]);
+  effect_->SetTexture2(tex_[2]);
+  effect_->SetBlendTex0(alpha_[0]);
+  effect_->SetBlendTex1(alpha_[1]);
+  effect_->SetBlendTex2(alpha_[2]);
+  effect_->SetBlendTex3(alpha_[3]);
   effect_->SetMaterialMap(material_tex_);
-  effect_->SetColorMap(colormap_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 

@@ -16,8 +16,12 @@ struct DirLight {
 [uniform_func="SetDirLight"] uniform DirLight light;
 [uniform_func="SetTexture0"] uniform Texture2D tex0;
 [uniform_func="SetTexture1"] uniform Texture2D tex1;
+[uniform_func="SetTexture2"] uniform Texture2D tex2;
+[uniform_func="SetBlendTex0"] uniform Texture2D alpha0;
+[uniform_func="SetBlendTex1"] uniform Texture2D alpha1;
+[uniform_func="SetBlendTex2"] uniform Texture2D alpha2;
+[uniform_func="SetBlendTex3"] uniform Texture2D alpha3;
 [uniform_func="SetMaterialMap"] uniform Texture2D materialmap;
-[uniform_func="SetColorMap"] uniform Texture2D colormap;
 
 exchange struct VsOutput {
   [semantic="position" system="true"]
@@ -45,15 +49,54 @@ VsOutput vs_main(VSInput input) {
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
-  vec4 tex_color0 = sample2D(tex0, o.tex0);
-  vec4 tex_color1 = sample2D(tex1, o.tex0);
-  vec4 material = sample2D(materialmap, o.tex0);
-  vec4 colorm = sample2D(colormap, o.tex1);
-  vec3 color = tex_color0.xyz * material.xyz +
-      tex_color1.xyz * (vec3(1, 1, 1) - material.xyz);
+  vec4 color0;
+  vec4 color1;
+  vec4 blend_factor;
+  vec4 material = sample2D(materialmap, o.tex1);
+  if (length(material.xyz - vec3(0.0f, 1.0f, 0.0f)) < 0.1) {
+    color0 = sample2D(tex0, o.tex0);
+    color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  } else if (length(material.xyz - vec3(1.0f, 0.0f, 0.0f)) < 0.1) {
+    color0 = sample2D(tex1, o.tex0);
+    color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  } else if (length(material.xyz - vec3(0.0f, 0.0f, 1.0f)) < 0.1) {
+    color0 = sample2D(tex1, o.tex0);
+    color1 = sample2D(tex0, o.tex0);
+    blend_factor = sample2D(alpha1, o.tex0);
+  } else if (length(material.xyz - vec3(0.0f, 1.0f, 1.0f)) < 0.1) {
+    color0 = sample2D(tex1, o.tex0);
+    color1 = sample2D(tex0, o.tex0);
+    blend_factor = sample2D(alpha0, o.tex0);
+  } else if (length(material.xyz - vec3(1.0f, 1.0f, 1.0f)) < 0.1) {
+    color0 = sample2D(tex2, o.tex0);
+    color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  } else if (length(material.xyz - vec3(0.5f, 0.5f, 0.5f)) < 0.1) {
+    color0 = sample2D(tex0, o.tex0);
+    color1 = sample2D(tex2, o.tex0);
+    blend_factor = sample2D(alpha0, o.tex0);
+  } else if (length(material.xyz - vec3(0.5f, 0.0f, 0.0f)) < 0.1) {
+    color0 = sample2D(tex0, o.tex0);
+    color1 = sample2D(tex2, o.tex0);
+    blend_factor = sample2D(alpha2, o.tex0);
+  } else if (length(material.xyz - vec3(0.0f, 0.0f, 0.5f)) < 0.1) {
+    color0 = sample2D(tex0, o.tex0);
+    color1 = sample2D(tex2, o.tex0);
+    blend_factor = sample2D(alpha3, o.tex0);
+  } else {
+    color0 = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    color1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    blend_factor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  }
+
+
+  vec3 color = color0.xyz * blend_factor.xyz  +
+      color1.xyz * (vec3(1.0f, 1.0f, 1.0f) - blend_factor.xyz);
   float diffuse_factor = clamp(dot(normalize(o.normal.xyz), -light.dir.xyz),
                                0.0, 1.0);
   vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
-  return vec4(light_factor.xyz * color * colorm.xyz * 2.0f, 1.0);
+  return vec4(light_factor.xyz * color, 1.0);
 }
 
