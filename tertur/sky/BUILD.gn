@@ -1,0 +1,22 @@
+import("//build/templates/afx.gni")
+
+afx("tersbox_tertur_sky_effect") {
+  source = "diffuse.afx"
+  filename = "diffuse"
+}
+
+afx("tersbox_tertur_sky_effect2") {
+  source = "skyplane.afx"
+  filename = "skyplane"
+}
+
+executable("tersbox_tertur_sky") {
+  sources = ["main.cc", "skyplane.cc"]
+  deps = ["//azer/render:render",
+          "//azer/util:azer_util",
+          "//tersbox/base:tersbox_base",
+          "//base:appinit",
+          ":tersbox_tertur_sky_effect",
+          ":tersbox_tertur_sky_effect2",
+         ]
+}

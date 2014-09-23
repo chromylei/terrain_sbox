@@ -6,11 +6,12 @@
 #include "base/files/file_path.h"
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/cubeframe.h"
+#include "tersbox/tertur/sky/skyplane.h"
 
 #include <tchar.h>
 
 #include "diffuse.afx.h"
-#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/move/"
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/sky/"
 #define SHADER_NAME "diffuse.afx"
 #define HEIGHTMAP  FILE_PATH_LITERAL("tersbox/tertur/media/heightmap01.bmp")
 #define TERTEX  FILE_PATH_LITERAL("tersbox/tertur/media/dirt01.dds")
@@ -31,7 +32,7 @@ class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() : tile_(9, 0.2f) {
+  MainDelegate() : tile_(9, 0.5f) {
   }
   virtual void OnCreate() {}
 
@@ -49,8 +50,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::TexturePtr tex_;
   std::unique_ptr<DiffuseEffect> effect_;
   DiffuseEffect::DirLight light_;
-  CubeFrame cubeframe_;
   std::vector<azer::Tile::Pitch> pitches_;
+  SkyPlane skyplane_;
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -80,11 +81,10 @@ void MainDelegate::Init() {
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
   light_.ambient = azer::Vector4(0.05f, 0.05f, 0.05f, 1.0f);
 
-  cubeframe_.Init(rs);
-
   QuadTreeSplit splitable;
   azer::Tile::QuadTree tree(tile_.level());
   tree.Split(&splitable, &pitches_);
+  skyplane_.Init(rs);
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -150,17 +150,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
-  cubeframe_.SetWorldMatrix(azer::Matrix4::kIdentity);
-  cubeframe_.SetPVMatrix(camera_.GetProjViewMatrix());
-  cubeframe_.SetDiffuse(azer::Vector4(1, 0, 0, 1));
-  for (auto iter = pitches_.begin(); iter != pitches_.end(); ++iter) {
-    const azer::Tile::Pitch& pitch = *iter;
-    azer::Vector3 minpos = tile_.vertex(pitch.left, pitch.top);
-    minpos.y = 0.0f;
-    azer::Vector3 maxpos = tile_.vertex(pitch.right, pitch.bottom);
-    maxpos.y = 20.0f;
-    cubeframe_.Render(minpos, maxpos, renderer);
-  }
+  skyplane_.Render(camera_, renderer);
 }
 
 int main(int argc, char* argv[]) {
