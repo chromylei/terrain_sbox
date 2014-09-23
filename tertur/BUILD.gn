@@ -11,6 +11,7 @@ group("tersbox_tertur") {
     "colormap:tersbox_tertur_colormap",
     "terblending:tersbox_tertur_terblending",
     "slope:tersbox_tertur_slope",
+    "terbump:tersbox_tertur_terbump",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
   ]
