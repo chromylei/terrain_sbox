@@ -1,3 +1,5 @@
+#include "tersbox/base/light.afxi"
+
 technique [
     name = "water"
     ps_main="ps_main"
@@ -5,15 +7,9 @@ technique [
     class_name="WaterEffect"
            ];
 
-struct DirLight {
-  vec4 dir;
-  vec4 diffuse;
-  vec4 ambient;
-};
-
 [uniform_func="SetPVW"] uniform mat4 pvw;
 [uniform_func="SetWorld"] uniform mat4 world;
-[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetDirLight"] uniform sbox::DirLight light;
 [uniform_func="SetRefractTex"] uniform Texture2D refract_tex;
 [uniform_func="SetBumpTex"] uniform Texture2D bump_tex;
 

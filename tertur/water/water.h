@@ -3,8 +3,9 @@
 #include "base/basictypes.h"
 #include "azer/render/render.h"
 #include "azer/util/util.h"
-#include "water.afx.h"
 #include "azer/render/util/tex_render_target.h"
+
+#include "water.afx.h"
 
 class Water {
  public:
@@ -22,6 +23,7 @@ class Water {
   std::unique_ptr<azer::TexRenderTarget> reflect_target_;
   azer::Vector3 position_;
   azer::Tile tile_;
+  DirLight light_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
   std::unique_ptr<WaterEffect> effect_;

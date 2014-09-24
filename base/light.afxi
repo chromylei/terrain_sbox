@@ -1,3 +1,5 @@
+#package sbox;
+
 [cppstruct="DirLight" cpphead="tersbox/base/light.afx.h"]
 struct DirLight {
   vec4 dir;

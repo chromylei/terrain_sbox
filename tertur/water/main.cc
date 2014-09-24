@@ -53,7 +53,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::TexturePtr tex_;
   azer::TexturePtr bump_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
-  DiffuseEffect::DirLight light_;
+  DirLight light_;
   std::vector<azer::Tile::Pitch> pitches_;
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);

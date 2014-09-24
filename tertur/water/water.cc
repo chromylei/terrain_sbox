@@ -47,6 +47,5 @@ void Water::Render(const azer::Camera& camera, azer::Renderer* renderer) {
   effect_->SetPVW(pvw);
   effect_->SetDirLight(light_);
   effect_->SetRefractTex(refract_target_->GetRTTex());
-  PrepareEffect(effect_.get());
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 }
