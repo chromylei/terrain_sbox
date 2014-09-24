@@ -13,6 +13,7 @@
 #define SHADER_NAME "diffuse.afx"
 #define TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\stone01.dds")
 #define BUMP_TEXPATH FILE_PATH_LITERAL("samples\\resources\\texture\\bump01.dds")
+#define CUBE_PATH FILE_PATH_LITERAL("tersbox\\effect\\data\\cube.txt")
 using base::FilePath;
 
 class MainDelegate : public azer::WindowHost::Delegate {
@@ -59,8 +60,7 @@ void MainDelegate::Init() {
 }
 
 void MainDelegate::InitVertex(azer::RenderSystem* rs) {
-  std::vector<Vertex> v = std::move(
-      loadModel(base::FilePath(TEXT("sandbox/rastertek/media/cube.txt"))));
+  std::vector<Vertex> v = std::move(loadModel(CUBE_PATH));
   std::vector<DiffuseEffect::Vertex> vertex;
   DiffuseEffect::Vertex tmp;
   for (size_t i = 0; i < v.size(); i+=3) {

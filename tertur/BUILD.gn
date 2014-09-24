@@ -15,5 +15,6 @@ group("tersbox_tertur") {
     "terbump:tersbox_tertur_terbump",
     "skydomes:tersbox_tertur_skydomes",
     "bitmapclouds:tersbox_tertur_bitmapclouds",
+    "water:tersbox_tertur_water",
   ]
 }

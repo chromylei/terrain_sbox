@@ -1,0 +1,48 @@
+technique [
+    name = "diffuse"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="WaterEffect"
+           ];
+
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetWorld"] uniform mat4 world;
+[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetRefractTex"] uniform Texture2D refract_tex;
+[uniform_func="SetBumpTex"] uniform Texture2D bump_tex;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 tex0;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 tex0;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0f);
+  o.tex0 = input.tex0;
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  vec4 refract_color = sample2D(refract_tex, o.tex0);
+  vec4 color = refract_color;
+  vec4 bn = sample2D(bump_tex, o.tex0);
+  vec4 normal = normalize(bn * 2.0f - 1.0f);
+  float diffuse_factor = clamp(dot(normalize(normal.xyz), -light.dir.xyz), 0.0, 1.0);
+  vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
+  return vec4(light_factor.xyz * color.xyz, 1.0);
+}
+

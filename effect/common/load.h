@@ -15,3 +15,6 @@ struct Vertex {
 };
 
 std::vector<Vertex> loadModel(const base::FilePath& path);
+inline std::vector<Vertex> loadModel(const base::FilePath::StringType& path) {
+  return loadModel(::base::FilePath(path));
+}
