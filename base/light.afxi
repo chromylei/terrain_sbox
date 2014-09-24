@@ -1,0 +1,6 @@
+[cppstruct="DirLight" cpphead="tersbox/base/light.afx.h"]
+struct DirLight {
+  vec4 dir;
+  vec4 diffuse;
+  vec4 ambient;
+};
