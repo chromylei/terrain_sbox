@@ -58,7 +58,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::Texture::SamplerState material_sampler_;
   azer::Texture::SamplerState default_sampler_;
   std::unique_ptr<DiffuseEffect> effect_;
-  DiffuseEffect::DirLight light_;
+  DirLight light_;
   CubeFrame cubeframe_;
   std::vector<azer::Tile::Pitch> pitches_;
 

@@ -1,3 +1,5 @@
+#include "tersbox/base/light.afxi"
+
 technique [
     name = "diffuse"
     ps_main="ps_main"
@@ -13,7 +15,7 @@ struct DirLight {
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
 [uniform_func="SetWorld"] uniform mat4 world;
-[uniform_func="SetDirLight"] uniform DirLight light;
+[uniform_func="SetDirLight"] uniform sbox::DirLight light;
 [uniform_func="SetTexture0"] uniform Texture2D tex0;
 [uniform_func="SetTexture1"] uniform Texture2D tex1;
 [uniform_func="SetTexture2"] uniform Texture2D tex2;

@@ -32,7 +32,7 @@ class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
 
 class MainDelegate : public azer::WindowHost::Delegate {
  public:
-  MainDelegate() : tile_(9, 0.2f) {
+  MainDelegate() : tile_(8, 1.0f) {
   }
   virtual void OnCreate() {}
 
@@ -50,7 +50,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   azer::TexturePtr tex_;
   azer::TexturePtr bump_tex_;
   std::unique_ptr<DiffuseEffect> effect_;
-  DiffuseEffect::DirLight light_;
+  DirLight light_;
   CubeFrame cubeframe_;
   std::vector<azer::Tile::Pitch> pitches_;
 
@@ -91,7 +91,7 @@ void MainDelegate::Init() {
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
-  float repeat_num = 20.0f;
+  float repeat_num = 10.0f;
   azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
   azer::IndicesData idata(tile_.indices().size(), azer::IndicesData::kUint32);
   memcpy(idata.pointer(), &(tile_.indices()[0]),
@@ -101,7 +101,7 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
       azer::Vector3 pos = tile_.vertex(j, i);
       int x = heightmap_->width() * ((float)j / (float)tile_.GetGridLineNum());
       int y = heightmap_->width() * ((float)i / (float)tile_.GetGridLineNum());
-      float height = (float)(heightmap_->pixel(x, y) & 0x000000FF) * 0.1f;
+      float height = (float)(heightmap_->pixel(x, y) & 0x000000FF) * 0.4f;
       tile_.SetHeight(j, i, height * 0.5f);
     }
   }
