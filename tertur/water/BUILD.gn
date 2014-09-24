@@ -12,7 +12,7 @@ afx("tersbox_tertur_water_effect2") {
 
 
 executable("tersbox_tertur_water") {
-  sources = ["main.cc"]
+  sources = ["main.cc", "water.cc"]
   deps = ["//azer/render:render",
           "//azer/util:azer_util",
           "//tersbox/base:tersbox_base",

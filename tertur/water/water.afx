@@ -1,5 +1,5 @@
 technique [
-    name = "diffuse"
+    name = "water"
     ps_main="ps_main"
     vs_main="vs_main"
     class_name="WaterEffect"

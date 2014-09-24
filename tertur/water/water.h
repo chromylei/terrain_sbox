@@ -4,18 +4,23 @@
 #include "azer/render/render.h"
 #include "azer/util/util.h"
 #include "water.afx.h"
+#include "azer/render/util/tex_render_target.h"
 
 class Water {
  public:
   Water() : tile_(4, 1.0f) {}
 
-  virtual void DrawRefraction(azer::Renderer* renderer);
-  virtual void DrawReflection(azer::Renderer* renderer);
-  void Init();
+  virtual void DrawRefraction(azer::Renderer* renderer) = 0;
+  virtual void DrawReflection(azer::Renderer* renderer) = 0;
+
+  bool Init(azer::RenderSystem* rs);
+  void Render(const azer::Camera& camera, azer::Renderer* renderer);
 
   void SetPosition(const azer::Vector3& position);
-  void Render(azer::Renderer* renderer);
  private:
+  std::unique_ptr<azer::TexRenderTarget> refract_target_;
+  std::unique_ptr<azer::TexRenderTarget> reflect_target_;
+  azer::Vector3 position_;
   azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
