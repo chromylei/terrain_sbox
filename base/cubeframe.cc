@@ -3,12 +3,13 @@
 #include "azer/render/render.h"
 #include "frame_effect.afx.h"
 
+#define EFFECT_GEN_DIR "out/dbg/gen/tersbox/base/"
+#define SHADER_NAME "frame_effect.afx"
+
 void CubeFrame::Init(azer::RenderSystem* rs) {
   azer::ShaderArray shaders;
-  CHECK(azer::LoadVertexShader("out/dbg/gen/tersbox/fter/base/frame_effect.afx.vs",
-                               &shaders));
-  CHECK(azer::LoadPixelShader("out/dbg/gen/tersbox/fter/base/frame_effect.afx.ps",
-                              &shaders));
+  CHECK(azer::LoadVertexShader(EFFECT_GEN_DIR SHADER_NAME ".vs", &shaders));
+  CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   
   FrameEffect* effect = new FrameEffect(shaders.GetShaderVec(), rs);
   effect_.reset(effect);
