@@ -47,7 +47,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   virtual void OnQuit() {}
  private:
   void InitPhysicsBuffer(azer::RenderSystem* rs);
-  azer::Camera camera_;
+  FreeCamera camera_;
   azer::Tile tile_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
@@ -108,7 +108,7 @@ void MainDelegate::Init() {
   azer::Plane plane(azer::Vector3(1.0f, 4.0f, 1.0f),
                     azer::Vector3(1.0f, 4.0f, 0.0f),
                     azer::Vector3(0.0f, 4.0f, 1.0f));
-  reflect_.reset(new Reflect(plane));
+  reflect_.reset(new Reflect(&camera_, plane));
   reflect_->Init(rs);
   skydomes_.Init(rs);
 }
@@ -168,7 +168,6 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::Renderer* wrd = water_.BeginDrawRefract();
   DrawScene(camera_, wrd);
 
-  reflect_->OnCamera(camera_);
   azer::Renderer* rfd = reflect_->Begin();
   rfd->SetCullingMode(azer::kCullBack);
   DrawScene(reflect_->GetMirrorCamera(), rfd);

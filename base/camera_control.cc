@@ -63,3 +63,42 @@ void RendererControl(azer::Renderer* renderer, double time) {
     }
   }
 }
+
+void FreeCamera::AddObserver(Observer* ob) {
+  observer_.push_back(ob);
+}
+
+void FreeCamera::RemoveObserver(Observer* ob) {
+  auto iter = observer_.begin();
+  for (; iter != observer_.end(); ++iter) {
+    if (*iter == ob) {
+      observer_.erase(iter);
+      break;
+    }
+  }
+}
+
+void FreeCamera::GenMatrices() {
+  Camera::GenMatrices();
+
+  auto iter = observer_.begin();
+  for (; iter != observer_.end(); ++iter) {
+    (*iter)->Action();
+  }
+}
+
+MirrorCamera::MirrorCamera(FreeCamera* camera, const azer::Plane& plane)
+    : FreeCamera::Observer(camera)
+    , camera_(camera) {
+  mirror_ = std::move(azer::MirrorTrans(plane));
+}
+
+void MirrorCamera::Action() {
+  GenMatrices();
+}
+
+void MirrorCamera::GenMatrices() {
+  DCHECK(camera_ != NULL);
+  view_mat_ = camera_->GetViewMatrix() * mirror_;
+  proj_view_mat_ = camera_->GetProjViewMatrix() * mirror_; 
+}

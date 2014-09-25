@@ -40,7 +40,7 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::unique_ptr<ReflectEffect> ref_effect_;
   DiffuseEffect::DirLight light_;
   azer::Matrix4 world_;
-  azer::Camera camera_;
+  FreeCamera camera_;
   azer::TexturePtr tex_;
   azer::TexturePtr blue_tex_;
 

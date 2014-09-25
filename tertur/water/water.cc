@@ -63,7 +63,7 @@ void Water::Render(double time, const azer::Camera& camera,
   effect_->SetDirLight(light_);
   effect_->SetRefractTex(refract_target_->GetRTTex());
   effect_->SetReflectTex(reflect_->GetReflectTex());
-  effect_->SetReflectPVW(reflect_->GetMirrorPV());
+  effect_->SetReflectPVW(reflect_->GetMirrorCamera().GetProjViewMatrix());
   effect_->SetBumpTex(bump_tex_);
   effect_->SetTime((float)time * 0.1f);
   effect_->Use(renderer);
