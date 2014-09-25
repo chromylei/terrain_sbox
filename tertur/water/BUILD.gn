@@ -10,14 +10,19 @@ afx("tersbox_tertur_water_effect2") {
   filename = "water"
 }
 
+afx("tersbox_tertur_water_effect3") {
+  source = "skyplane.afx"
+  filename = "skyplane"
+}
 
 executable("tersbox_tertur_water") {
-  sources = ["main.cc", "water.cc"]
+  sources = ["main.cc", "water.cc", "skyplane.cc"]
   deps = ["//azer/render:render",
           "//azer/util:azer_util",
           "//tersbox/base:tersbox_base",
           "//base:appinit",
           ":tersbox_tertur_water_effect",
           ":tersbox_tertur_water_effect2",
+           ":tersbox_tertur_water_effect3",
          ]
 }

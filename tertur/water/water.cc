@@ -55,6 +55,10 @@ azer::Renderer* Water::BeginDrawRefract() {
   return refract_target_->Begin(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
+azer::Renderer* Water::BeginDrawReflect() {
+  return reflect_target_->Begin(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
 void Water::Render(double time, const azer::Camera& camera,
                    azer::Renderer* renderer) {
   renderer->Use();

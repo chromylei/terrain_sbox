@@ -7,6 +7,7 @@
 #include "tersbox/base/camera_control.h"
 #include "tersbox/base/cubeframe.h"
 #include "tersbox/tertur/water/water.h"
+#include "tersbox/tertur/water/skyplane.h"
 
 #include <tchar.h>
 
@@ -56,8 +57,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   DirLight light_;
   std::vector<azer::Tile::Pitch> pitches_;
   Water water_;
+  SkyPlane skyplane_;
 
-  void DrawScene(azer::Renderer* renderer);
+  void DrawScene(const azer::Camera& camera, azer::Renderer* renderer);
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -97,6 +99,7 @@ void MainDelegate::Init() {
 
   water_.SetDirLight(light_);
   water_.Init(azer::Vector3(0.0f, 4.0f, 0.0f), rs);
+  skyplane_.Init(rs);
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -152,7 +155,7 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
   azer::Renderer* wrd = water_.BeginDrawRefract();
-  DrawScene(wrd);
+  DrawScene(camera_, wrd);
 
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   renderer->Use();
@@ -160,19 +163,21 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
-  DrawScene(renderer);
+  DrawScene(camera_, renderer);
   water_.Render(time, camera_, renderer);
 }
 
-void MainDelegate::DrawScene(azer::Renderer* renderer) {
+void MainDelegate::DrawScene(const azer::Camera& camera, azer::Renderer* renderer) {
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
-  effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
+  effect_->SetPVW(std::move(camera.GetProjViewMatrix() * world));
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
   effect_->SetTexture(tex_);
   effect_->SetBumpTex(bump_tex_);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
+
+  skyplane_.Render(camera, renderer);
 }
 
 int main(int argc, char* argv[]) {

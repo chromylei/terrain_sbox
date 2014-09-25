@@ -17,6 +17,7 @@ class Water {
   void SetDirLight(const DirLight& light) { light_ = light;}
 
   azer::Renderer* BeginDrawRefract();
+  azer::Renderer* BeginDrawReflect();
  private:
   std::unique_ptr<azer::TexRenderTarget> refract_target_;
   std::unique_ptr<azer::TexRenderTarget> reflect_target_;

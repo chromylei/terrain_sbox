@@ -1,0 +1,40 @@
+technique [
+    name = "skyplane"
+    ps_main="ps_main"
+    vs_main="vs_main"
+    class_name="SkyPlaneEffect"
+           ];
+
+[uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetCloud1"] uniform Texture2D cloud01;
+[uniform_func="SetApexColor"] uniform vec4 apex_color;
+[uniform_func="SetCenterColor"] uniform vec4 center_color;
+
+exchange struct VsOutput {
+  [semantic="position" system="true"]
+  vec4 position;
+  vec2 texcoord;
+  vec4 position2;
+};
+
+exchange struct VSInput {
+  vec3 position;
+  vec2 texcoord;
+};
+
+VsOutput vs_main(VSInput input) {
+  VsOutput o;
+  o.position = pvw * vec4(input.position, 1.0);
+  o.texcoord = input.texcoord;
+  o.position2 = pvw * vec4(input.position, 1.0);
+  return o;
+}
+
+[system="true" semantic="target"]
+vec4 ps_main(VsOutput o) {
+  float height = o.position.y / o.position.w;
+  vec4 color = lerp(center_color, apex_color, height);
+  vec4 cloud = sample2D(cloud01, o.texcoord);
+  return color + cloud;
+}
+
