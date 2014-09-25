@@ -55,6 +55,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::unique_ptr<DiffuseEffect> effect_;
   DirLight light_;
   std::vector<azer::Tile::Pitch> pitches_;
+  Water water_;
+
+  void DrawScene(azer::Renderer* renderer);
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -91,6 +94,9 @@ void MainDelegate::Init() {
   QuadTreeSplit splitable;
   azer::Tile::QuadTree tree(tile_.level());
   tree.Split(&splitable, &pitches_);
+
+  water_.SetDirLight(light_);
+  water_.Init(azer::Vector3(0.0f, 4.0f, 0.0f), rs);
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -145,12 +151,20 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
+  azer::Renderer* wrd = water_.BeginDrawRefract();
+  DrawScene(wrd);
+
   azer::Renderer* renderer = rs->GetDefaultRenderer();
+  renderer->Use();
   renderer->SetCullingMode(azer::kCullNone);
   DCHECK(NULL != rs);
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
+  DrawScene(renderer);
+  water_.Render(time, camera_, renderer);
+}
 
+void MainDelegate::DrawScene(azer::Renderer* renderer) {
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
   effect_->SetPVW(std::move(camera_.GetProjViewMatrix() * world));
   effect_->SetWorld(world);

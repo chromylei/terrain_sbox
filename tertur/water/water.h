@@ -9,15 +9,14 @@
 
 class Water {
  public:
-  Water() : tile_(4, 1.0f) {}
+  Water() : tile_(4, 8.0f) {}
 
-  virtual void DrawRefraction(azer::Renderer* renderer) = 0;
-  virtual void DrawReflection(azer::Renderer* renderer) = 0;
+  bool Init(const azer::Vector3& pos, azer::RenderSystem* rs);
+  void Render(double time, const azer::Camera& camera, azer::Renderer* renderer);
 
-  bool Init(azer::RenderSystem* rs);
-  void Render(const azer::Camera& camera, azer::Renderer* renderer);
+  void SetDirLight(const DirLight& light) { light_ = light;}
 
-  void SetPosition(const azer::Vector3& position);
+  azer::Renderer* BeginDrawRefract();
  private:
   std::unique_ptr<azer::TexRenderTarget> refract_target_;
   std::unique_ptr<azer::TexRenderTarget> reflect_target_;
@@ -26,6 +25,7 @@ class Water {
   DirLight light_;
   azer::VertexBufferPtr vb_;
   azer::IndicesBufferPtr ib_;
+  azer::TexturePtr bump_tex_;
   std::unique_ptr<WaterEffect> effect_;
   DISALLOW_COPY_AND_ASSIGN(Water);
 };
