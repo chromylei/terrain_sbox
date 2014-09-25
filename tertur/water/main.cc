@@ -8,6 +8,8 @@
 #include "tersbox/base/cubeframe.h"
 #include "tersbox/tertur/water/water.h"
 #include "tersbox/tertur/water/skyplane.h"
+#include "tersbox/tertur/water/reflect.h"
+#include "tersbox/tertur/water/skydomes.h"
 
 #include <tchar.h>
 
@@ -58,6 +60,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::vector<azer::Tile::Pitch> pitches_;
   Water water_;
   SkyPlane skyplane_;
+  std::unique_ptr<Reflect> reflect_;
+  SkyDomes skydomes_;
 
   void DrawScene(const azer::Camera& camera, azer::Renderer* renderer);
 
@@ -100,6 +104,13 @@ void MainDelegate::Init() {
   water_.SetDirLight(light_);
   water_.Init(azer::Vector3(0.0f, 4.0f, 0.0f), rs);
   skyplane_.Init(rs);
+
+  azer::Plane plane(azer::Vector3(1.0f, 4.0f, 1.0f),
+                    azer::Vector3(1.0f, 4.0f, 0.0f),
+                    azer::Vector3(0.0f, 4.0f, 1.0f));
+  reflect_.reset(new Reflect(plane));
+  reflect_->Init(rs);
+  skydomes_.Init(rs);
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -157,6 +168,12 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   azer::Renderer* wrd = water_.BeginDrawRefract();
   DrawScene(camera_, wrd);
 
+  reflect_->OnCamera(camera_);
+  azer::Renderer* rfd = reflect_->Begin();
+  skyplane_.Render(reflect_->GetMirrorCamera(), rfd);
+  skydomes_.Render(reflect_->GetMirrorCamera(), renderer);
+  // DrawScene(reflect_->GetMirrorCamera(), rfd);
+
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   renderer->Use();
   renderer->SetCullingMode(azer::kCullNone);
@@ -164,6 +181,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
   DrawScene(camera_, renderer);
+  water_.SetReflect(reflect_.get());
   water_.Render(time, camera_, renderer);
 }
 
@@ -178,6 +196,7 @@ void MainDelegate::DrawScene(const azer::Camera& camera, azer::Renderer* rendere
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
   skyplane_.Render(camera, renderer);
+  skydomes_.Render(camera_, renderer);
 }
 
 int main(int argc, char* argv[]) {

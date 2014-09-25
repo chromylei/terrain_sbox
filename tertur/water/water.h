@@ -4,7 +4,7 @@
 #include "azer/render/render.h"
 #include "azer/util/util.h"
 #include "azer/render/util/tex_render_target.h"
-
+#include "tersbox/tertur/water/reflect.h"
 #include "water.afx.h"
 
 class Water {
@@ -17,10 +17,9 @@ class Water {
   void SetDirLight(const DirLight& light) { light_ = light;}
 
   azer::Renderer* BeginDrawRefract();
-  azer::Renderer* BeginDrawReflect();
+  void SetReflect(Reflect* reflect) { reflect_ = reflect; }
  private:
   std::unique_ptr<azer::TexRenderTarget> refract_target_;
-  std::unique_ptr<azer::TexRenderTarget> reflect_target_;
   azer::Vector3 position_;
   azer::Tile tile_;
   DirLight light_;
@@ -28,5 +27,6 @@ class Water {
   azer::IndicesBufferPtr ib_;
   azer::TexturePtr bump_tex_;
   std::unique_ptr<WaterEffect> effect_;
+  Reflect* reflect_;
   DISALLOW_COPY_AND_ASSIGN(Water);
 };

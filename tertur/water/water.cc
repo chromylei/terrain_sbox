@@ -44,19 +44,12 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   refract_target_.reset(new azer::TexRenderTarget(800, 600));
   refract_target_->Init(rs);
 
-  reflect_target_.reset(new azer::TexRenderTarget(800, 600));
-  reflect_target_->Init(rs);
-
   bump_tex_.reset(azer::Texture::LoadShaderTexture(WATER_BUMPTEX, rs));
   return true;
 }
 
 azer::Renderer* Water::BeginDrawRefract() {
   return refract_target_->Begin(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-}
-
-azer::Renderer* Water::BeginDrawReflect() {
-  return reflect_target_->Begin(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 void Water::Render(double time, const azer::Camera& camera,
@@ -66,6 +59,8 @@ void Water::Render(double time, const azer::Camera& camera,
   effect_->SetPVW(pvw);
   effect_->SetDirLight(light_);
   effect_->SetRefractTex(refract_target_->GetRTTex());
+  effect_->SetReflectTex(reflect_->GetReflectTex());
+  effect_->SetReflectPVW(reflect_->GetMirrorPV());
   effect_->SetBumpTex(bump_tex_);
   effect_->SetTime((float)time * 0.1f);
   effect_->Use(renderer);
