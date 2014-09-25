@@ -2,18 +2,18 @@
 
 void UpdatedownCamera(azer::Camera* camera, azer::Radians speed,
                       float delta_time) {
+  UpdatedownCamera(camera, speed, speed, delta_time);
+}
+
+void UpdatedownCamera(azer::Camera* camera, azer::Radians speed,
+                      azer::Radians rspeed, float delta_time) {
   MovableControl(camera, speed, delta_time);
+  RotateControl(camera, rspeed, delta_time);
   camera->Update();
 }
 
-void MovableControl(azer::MovableObject* obj, azer::Radians speed,
-                    float delta_time) {
-  if( ::GetAsyncKeyState('A') & 0x8000f ) {
-    obj->strafe(-speed.value()* delta_time);
-  }
-  if( ::GetAsyncKeyState('D') & 0x8000f ) {
-    obj->strafe(speed.value()* delta_time);
-  }
+void RotateControl(azer::MovableObject* obj, azer::Radians speed,
+                   float delta_time) {
   if( ::GetAsyncKeyState('Q') & 0x8000f ) {
     obj->yaw(azer::Radians(speed.value()* delta_time));
   }
@@ -32,7 +32,17 @@ void MovableControl(azer::MovableObject* obj, azer::Radians speed,
   if( ::GetAsyncKeyState('G') & 0x8000f ) {
     obj->roll(azer::Radians(-speed.value()* delta_time));
   }
-  
+}
+
+void MovableControl(azer::MovableObject* obj, azer::Radians speed,
+                    float delta_time) {
+  if( ::GetAsyncKeyState('A') & 0x8000f ) {
+    obj->strafe(-speed.value()* delta_time);
+  }
+  if( ::GetAsyncKeyState('D') & 0x8000f ) {
+    obj->strafe(speed.value()* delta_time);
+  }
+
   if( ::GetAsyncKeyState('W') & 0x8000f ) {
     obj->walk(+speed.value()* delta_time);
   }

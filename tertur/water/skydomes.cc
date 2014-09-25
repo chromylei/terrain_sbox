@@ -32,7 +32,7 @@ void SkyDomes::Render(const azer::Camera& camera, azer::Renderer* renderer) {
   // renderer->SetFillMode(azer::kWireFrame);
 
   azer::Matrix4 world = std::move(azer::Translate(camera.position())
-                                  * azer::Scale(500.0f, 500.0f, 500.0f));
+                                  * azer::Scale(400.0f, 400.0f, 400.0f));
   azer::Matrix4 pvw = std::move(camera.GetProjViewMatrix() * world);
   effect_->SetPVW(pvw);
   effect_->SetApexColor(azer::Vector4(0.0f, 0.15f, 0.66f, 1.0f));

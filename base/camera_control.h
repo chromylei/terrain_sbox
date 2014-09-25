@@ -3,8 +3,11 @@
 #include <vector>
 #include "azer/render/render.h"
 
+void UpdatedownCamera(azer::Camera* camera, azer::Radians speed,
+                      azer::Radians rspeed, float delta_time);
 void UpdatedownCamera(azer::Camera* camera, azer::Radians speed, float delta_time);
 void MovableControl(azer::MovableObject* obj, azer::Radians speed, float delta_time);
+void RotateControl(azer::MovableObject* obj, azer::Radians speed, float delta_time);
 void RendererControl(azer::Renderer* renderer, double time);
 
 class FreeCamera : public azer::Camera {

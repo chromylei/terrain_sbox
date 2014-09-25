@@ -158,9 +158,9 @@ void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
 
 
 void MainDelegate::OnUpdateScene(double time, float delta_time) {
-  float rspeed = 3.14f * 2.0f / 4.0f;
+  float rspeed = 3.14f / 4.0f;
   azer::Radians camera_speed(azer::kPI * 10.0f / 2.0f);
-  UpdatedownCamera(&camera_, camera_speed, delta_time);
+  UpdatedownCamera(&camera_, camera_speed, rspeed, delta_time);
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
