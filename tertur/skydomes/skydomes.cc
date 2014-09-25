@@ -26,9 +26,6 @@ bool SkyDomes::Init(azer::RenderSystem* rs) {
 void SkyDomes::Render(const azer::Camera& camera, azer::Renderer* renderer) {
   azer::CullingMode cull = renderer->GetCullingMode();
   renderer->SetCullingMode(azer::kCullNone);
-  azer::FillMode filling = renderer->GetFillMode();
-//   renderer->SetFillMode(azer::kWireFrame);
-
   azer::Matrix4 world = std::move(azer::Translate(camera.position())
                                   * azer::Scale(10.0f, 10.0f, 10.0f));
   azer::Matrix4 pvw = std::move(camera.GetProjViewMatrix() * world);
@@ -38,7 +35,6 @@ void SkyDomes::Render(const azer::Camera& camera, azer::Renderer* renderer) {
   effect_->Use(renderer);
   renderer->Draw(sphere_.get(), azer::kTriangleList);
   renderer->SetCullingMode(cull);
-  renderer->SetFillMode(filling);
 }
 
 azer::VertexBuffer* SkyDomes::LoadVertex(const ::base::FilePath& path,

@@ -6,6 +6,7 @@ technique [
            ];
 
 [uniform_func="SetPVW"] uniform mat4 pvw;
+[uniform_func="SetCloud1"] uniform Texture2D cloud01;
 [uniform_func="SetApexColor"] uniform vec4 apex_color;
 [uniform_func="SetCenterColor"] uniform vec4 center_color;
 
@@ -36,6 +37,7 @@ VsOutput vs_main(VSInput input) {
 vec4 ps_main(VsOutput o) {
   float height = clamp(o.position2.y / o.position2.w, 0.0f, 1.0f);
   vec4 color = lerp(center_color, apex_color, height);
-  return color;
+  vec4 cloud = sample2D(cloud01, o.texcoord * 3.0f);
+  return color + cloud;
 }
 

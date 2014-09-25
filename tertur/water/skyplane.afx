@@ -32,7 +32,7 @@ VsOutput vs_main(VSInput input) {
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
-  float height = o.position.y / o.position.w;
+  float height = o.position2.y / o.position2.w;
   vec4 color = lerp(center_color, apex_color, height);
   vec4 cloud = sample2D(cloud01, o.texcoord);
   return color + cloud;

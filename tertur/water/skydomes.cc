@@ -6,6 +6,7 @@
 
 #define SPHERE_PATH FILE_PATH_LITERAL("tersbox\\tertur\\model\\skydome.txt")
 #define SKYTEX_PATH FILE_PATH_LITERAL("samples\\resources\\texture\\marble01.dds")
+#define CLOUNDS_PATH FILE_PATH_LITERAL("tersbox\\tertur\\media\\cloud001.dds")
 
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/water/"
 #define SHADER_NAME "skydomes.afx"
@@ -20,6 +21,7 @@ bool SkyDomes::Init(azer::RenderSystem* rs) {
 
   sphere_.reset(LoadVertex(FilePath(SPHERE_PATH), rs));
   // tex_.reset(azer::CreateShaderTexture(SKYTEX_PATH, rs));
+  tex_.reset(azer::CreateShaderTexture(CLOUNDS_PATH, rs));
   return true;
 }
 
@@ -27,14 +29,15 @@ void SkyDomes::Render(const azer::Camera& camera, azer::Renderer* renderer) {
   azer::CullingMode cull = renderer->GetCullingMode();
   renderer->SetCullingMode(azer::kCullNone);
   azer::FillMode filling = renderer->GetFillMode();
-//   renderer->SetFillMode(azer::kWireFrame);
+  // renderer->SetFillMode(azer::kWireFrame);
 
   azer::Matrix4 world = std::move(azer::Translate(camera.position())
-                                  * azer::Scale(10.0f, 10.0f, 10.0f));
+                                  * azer::Scale(500.0f, 500.0f, 500.0f));
   azer::Matrix4 pvw = std::move(camera.GetProjViewMatrix() * world);
   effect_->SetPVW(pvw);
   effect_->SetApexColor(azer::Vector4(0.0f, 0.15f, 0.66f, 1.0f));
   effect_->SetCenterColor(azer::Vector4(0.81f, 0.38f, 0.66f, 1.0f));
+  effect_->SetCloud1(tex_);
   effect_->Use(renderer);
   renderer->Draw(sphere_.get(), azer::kTriangleList);
   renderer->SetCullingMode(cull);

@@ -170,13 +170,12 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
 
   reflect_->OnCamera(camera_);
   azer::Renderer* rfd = reflect_->Begin();
-  skyplane_.Render(reflect_->GetMirrorCamera(), rfd);
-  skydomes_.Render(reflect_->GetMirrorCamera(), renderer);
-  // DrawScene(reflect_->GetMirrorCamera(), rfd);
-
+  rfd->SetCullingMode(azer::kCullBack);
+  DrawScene(reflect_->GetMirrorCamera(), rfd);
+  
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   renderer->Use();
-  renderer->SetCullingMode(azer::kCullNone);
+  renderer->SetCullingMode(azer::kCullBack);
   DCHECK(NULL != rs);
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
@@ -195,8 +194,8 @@ void MainDelegate::DrawScene(const azer::Camera& camera, azer::Renderer* rendere
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 
-  skyplane_.Render(camera, renderer);
-  skydomes_.Render(camera_, renderer);
+  // skyplane_.Render(camera, renderer);
+  skydomes_.Render(camera, renderer);
 }
 
 int main(int argc, char* argv[]) {

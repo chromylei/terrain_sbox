@@ -2,7 +2,7 @@
 
 #define EFFECT_GEN_DIR "out/dbg/gen/tersbox/tertur/water/"
 #define SHADER_NAME "water.afx"
-#define WATER_BUMPTEX FILE_PATH_LITERAL("tersbox/tertur/media/normal.dds")
+#define WATER_BUMPTEX FILE_PATH_LITERAL("tersbox/tertur/media/waternormal.dds")
 
 bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   azer::ShaderArray shaders;
@@ -10,7 +10,7 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new WaterEffect(shaders.GetShaderVec(), rs));
 
-  float repeat_num = 5.0f;
+  float repeat_num = 10.0f;
   std::vector<azer::Vector3> tangent, binormal;
   tile_.Init();
   tile_.CalcNormal();
@@ -23,7 +23,9 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   for (int i = 0; i < tile_.GetGridLineNum(); ++i) {
     for (int j = 0; j < tile_.GetGridLineNum(); ++j) {
       v->position = tile_.vertices()[cnt] + pos;
-      v->tex0 = tile_.texcoord()[cnt] * repeat_num;
+      v->tex0 = tile_.texcoord()[cnt];
+      v->tex1 = tile_.texcoord()[cnt] * repeat_num;
+      v->tex2 = tile_.texcoord()[cnt] * repeat_num * 2.0f;
       v->normal = tile_.normal()[cnt];
       v->binormal = binormal[cnt];
       v->tangent = tangent[cnt];
@@ -55,6 +57,7 @@ azer::Renderer* Water::BeginDrawRefract() {
 void Water::Render(double time, const azer::Camera& camera,
                    azer::Renderer* renderer) {
   renderer->Use();
+  renderer->SetCullingMode(azer::kCullBack);
   azer::Matrix4 pvw = camera.GetProjViewMatrix();
   effect_->SetPVW(pvw);
   effect_->SetDirLight(light_);
