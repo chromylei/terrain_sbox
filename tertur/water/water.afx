@@ -63,7 +63,7 @@ vec4 ps_main(VsOutput o) {
   vec3 normal = normalize(bn.x * o.tangent.xyz +
                           bn.y * o.binormal.xyz + bn.z * o.normal.xyz);
 
-  float factor = 0.2;
+  float factor = 0.7;
   vec4 refract_tint = vec4(0.0f, 0.8f, 1.0f, 1.0f);
   vec2 refract_texcoord;
   refract_texcoord.x = o.refract_position.x / o.refract_position.w / 2.0f + 0.5f;

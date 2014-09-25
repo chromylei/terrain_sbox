@@ -169,7 +169,7 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DrawScene(camera_, wrd);
 
   azer::Renderer* rfd = reflect_->Begin();
-  rfd->SetCullingMode(azer::kCullBack);
+  rfd->SetCullingMode(azer::kCullFront);
   DrawScene(reflect_->GetMirrorCamera(), rfd);
   
   azer::Renderer* renderer = rs->GetDefaultRenderer();
