@@ -59,13 +59,13 @@ vec4 ps_main(VsOutput o) {
   vec2 refract_texcoord;
   refract_texcoord.x = o.refract_position.x / o.refract_position.w / 2.0f + 0.5f;
   refract_texcoord.y = -o.refract_position.y / o.refract_position.w / 2.0f + 0.5f;
-  // refract_texcoord = refract_texcoord + normal.xy * reflect_scale;
+  refract_texcoord = refract_texcoord + normal.xy * reflect_scale;
   vec4 refract_color = sample2D(refract_tex, refract_texcoord) * refract_tint;
 
   vec2 reflect_texcoord;
   reflect_texcoord.x = o.reflect_position.x / o.reflect_position.w / 2.0f + 0.5f;
   reflect_texcoord.y = -o.reflect_position.y / o.reflect_position.w / 2.0f + 0.5f;
-  // reflect_texcoord = reflect_texcoord + normal.xy * reflect_scale;
+  reflect_texcoord = reflect_texcoord + normal.xy * reflect_scale;
   vec4 reflect_color = sample2D(reflect_tex, reflect_texcoord);
 
   vec3 heightview = vec3(o.viewdir.yyy);
