@@ -13,10 +13,12 @@ technique [
 [uniform_func="SetTexture"] uniform Texture2D tex;
 [uniform_func="SetColorMap"] uniform Texture2D colormap;
 [uniform_func="SetBumpTex"] uniform Texture2D bump_tex;
+[uniform_func="SetClipPlane"] uniform vec4 clipplane;
 
 exchange struct VsOutput {
   [semantic="position" system="true"]
   vec4 position;
+  vec4 wpos;
   vec2 tex0;
   vec3 color;
   vec4 normal;
@@ -36,6 +38,7 @@ exchange struct VSInput {
 VsOutput vs_main(VSInput input) {
   VsOutput o;
   o.position = pvw * vec4(input.position, 1.0f);
+  o.wpos = world * vec4(input.position, 1.0);
   o.normal = world * vec4(input.normal, 0.0);
   o.tangent = world * vec4(input.tangent, 0.0);
   o.binormal = world * vec4(input.binormal, 0.0);
@@ -46,6 +49,7 @@ VsOutput vs_main(VSInput input) {
 
 [system="true" semantic="target"]
 vec4 ps_main(VsOutput o) {
+  clip(dot(clipplane, o.wpos));
   vec4 color = sample2D(tex, o.tex0);
   vec4 bn = sample2D(bump_tex, o.tex0);
   bn = bn * 2.0f - 1.0f;

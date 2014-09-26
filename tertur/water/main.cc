@@ -63,7 +63,8 @@ class MainDelegate : public azer::WindowHost::Delegate {
   std::unique_ptr<Reflect> reflect_;
   SkyDomes skydomes_;
 
-  void DrawScene(const azer::Camera& camera, azer::Renderer* renderer);
+  void DrawScene(const azer::Camera& camera, azer::Renderer* renderer,
+                 const azer::Plane& plane);
 
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
@@ -164,13 +165,20 @@ void MainDelegate::OnUpdateScene(double time, float delta_time) {
 }
 
 void MainDelegate::OnRenderScene(double time, float delta_time) {
+  azer::Plane refplane(azer::Vector3(1.0f, 4.0f, 1.0f),
+                       azer::Vector3(1.0f, 4.0f, 0.0f),
+                       azer::Vector3(0.0f, 4.0f, 1.0f));
+  azer::Plane defplane(azer::Vector3(1.0f, -100.0f, 1.0f),
+                       azer::Vector3(1.0f, -100.0f, 0.0f),
+                       azer::Vector3(0.0f, -100.0f, 1.0f));
+  
   azer::RenderSystem* rs = azer::RenderSystem::Current();
   azer::Renderer* wrd = water_.BeginDrawRefract();
-  DrawScene(camera_, wrd);
+  DrawScene(camera_, wrd, defplane);
 
   azer::Renderer* rfd = reflect_->Begin();
   rfd->SetCullingMode(azer::kCullFront);
-  DrawScene(reflect_->GetMirrorCamera(), rfd);
+  DrawScene(reflect_->GetMirrorCamera(), rfd, refplane);
   
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   renderer->Use();
@@ -178,18 +186,21 @@ void MainDelegate::OnRenderScene(double time, float delta_time) {
   DCHECK(NULL != rs);
   renderer->Clear(azer::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
   renderer->ClearDepthAndStencil();
-  DrawScene(camera_, renderer);
+  DrawScene(camera_, renderer, defplane);
   water_.SetReflect(reflect_.get());
   water_.Render(time, camera_, renderer);
 }
 
-void MainDelegate::DrawScene(const azer::Camera& camera, azer::Renderer* renderer) {
+void MainDelegate::DrawScene(const azer::Camera& camera, azer::Renderer* renderer,
+                             const azer::Plane& plane) {
+  azer::Vector4 clipplane(plane.normal(), plane.d());
   azer::Matrix4 world = std::move(azer::Translate(0.0f, 0.0f, 0.0f));
   effect_->SetPVW(std::move(camera.GetProjViewMatrix() * world));
   effect_->SetWorld(world);
   effect_->SetDirLight(light_);
   effect_->SetTexture(tex_);
   effect_->SetBumpTex(bump_tex_);
+  effect_->SetClipPlane(clipplane);
   effect_->Use(renderer);
   renderer->DrawIndex(vb_.get(), ib_.get(), azer::kTriangleList);
 

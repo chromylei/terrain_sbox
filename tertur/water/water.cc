@@ -10,7 +10,7 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new WaterEffect(shaders.GetShaderVec(), rs));
 
-  float repeat_num = 10.0f;
+  float repeat_num = 8.0f;
   std::vector<azer::Vector3> tangent, binormal;
   tile_.Init();
   tile_.CalcNormal();
