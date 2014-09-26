@@ -35,13 +35,11 @@ class QuadTreeSplit : public azer::Tile::QuadTree::Splitable {
   }
 };
 
-class MainDelegate : public azer::WindowHost::Delegate {
+class MainDelegate : public SampleApp::Delegate {
  public:
   MainDelegate() : tile_(8, 1.0f) {
   }
-  virtual void OnCreate() {}
-
-  void Init();
+  virtual bool OnInit();
   virtual void OnUpdateScene(double time, float delta_time);
   virtual void OnRenderScene(double time, float delta_time);
   virtual void OnQuit() {}
@@ -69,8 +67,9 @@ class MainDelegate : public azer::WindowHost::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MainDelegate);
 };
 
-void MainDelegate::Init() {
+bool MainDelegate::OnInit() {
   azer::RenderSystem* rs = azer::RenderSystem::Current();
+  LOG(ERROR) << "Current RenderSystem: " << rs->name();
   azer::Renderer* renderer = rs->GetDefaultRenderer();
   renderer->SetViewport(azer::Renderer::Viewport(0, 0, 800, 600));
   CHECK(renderer->GetFrontFace() == azer::kCounterClockwise);
@@ -112,6 +111,7 @@ void MainDelegate::Init() {
   reflect_.reset(new Reflect(&camera_, plane));
   reflect_->Init(rs);
   skydomes_.Init(rs);
+  return true;
 }
 
 void MainDelegate::InitPhysicsBuffer(azer::RenderSystem* rs) {
@@ -212,13 +212,9 @@ int main(int argc, char* argv[]) {
   ::base::InitApp(&argc, &argv, "");
   
   MainDelegate delegate;
-  azer::WindowHost win(azer::WindowHost::Options(), &delegate);
-  win.Init();
-  CHECK(azer::LoadRenderSystem(&win));
-  LOG(ERROR) << "Current RenderSystem: " << azer::RenderSystem::Current()->name();
-  delegate.Init();
-  win.Show();
-  azer::MainRenderLoop(&win);
+  SampleApp app(&delegate);
+  app.Init();
+  app.MainLoop();
   return 0;
 }
 
