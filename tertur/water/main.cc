@@ -96,7 +96,7 @@ void MainDelegate::Init() {
 
   light_.dir = azer::Vector4(0.5f, -0.75f, -0.25f, 0.0f);
   light_.diffuse = azer::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-  light_.ambient = azer::Vector4(0.1f, 0.1f, 0.1f, 1.0f);
+  light_.ambient = azer::Vector4(0.05f, 0.05f, 0.05f, 1.0f);
 
   QuadTreeSplit splitable;
   azer::Tile::QuadTree tree(tile_.level());

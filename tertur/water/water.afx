@@ -42,7 +42,7 @@ VsOutput vs_main(VSInput input) {
   o.tex2 = input.tex2;
   o.refract_position = pvw * vec4(input.position, 1.0);
   o.reflect_position = reflect_pvw * vec4(input.position, 1.0);
-  o.viewdir = camerapos - input.position;
+  o.viewdir = normalize(camerapos - input.position);
   return o;
 }
 
@@ -68,7 +68,7 @@ vec4 ps_main(VsOutput o) {
   // reflect_texcoord = reflect_texcoord + normal.xy * reflect_scale;
   vec4 reflect_color = sample2D(reflect_tex, reflect_texcoord);
 
-  vec3 heightview = normalize(vec3(o.viewdir.yyy));
+  vec3 heightview = vec3(o.viewdir.yyy);
   float r = (1.2f - 1.0f) / (1.2f + 1.0f);
 
   float factor = max(0.0f, min(1.0f, r + (1.0f - r) *
@@ -76,6 +76,6 @@ vec4 ps_main(VsOutput o) {
   vec4 color = lerp(refract_color, reflect_color, factor);
   float diffuse_factor = clamp(dot(normal, normalize(-light.dir.xyz)), 0.0, 1.0);
   vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
-  return vec4(light_factor.xyz * color.xyz, 1.0);
+  return vec4(light_factor.xyz * color.xyz * 2.0f, 1.0);
 }
 
