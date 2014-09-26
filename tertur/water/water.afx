@@ -13,6 +13,7 @@ technique [
 [uniform_func="SetRefractTex"] uniform Texture2D refract_tex;
 [uniform_func="SetReflectTex"] uniform Texture2D reflect_tex;
 [uniform_func="SetBumpTex"] uniform Texture2D bump_tex;
+[uniform_func="SetCameraPos"] uniform vec3 camerapos;
 [uniform_func="SetTime"] uniform float time;
 
 exchange struct VsOutput {
@@ -21,11 +22,9 @@ exchange struct VsOutput {
   vec2 tex0;
   vec2 tex1;
   vec2 tex2;
-  vec4 normal;
-  vec4 tangent;
-  vec4 binormal;
   vec4 refract_position;
   vec4 reflect_position;
+  vec3 viewdir;
 };
 
 exchange struct VSInput {
@@ -33,9 +32,6 @@ exchange struct VSInput {
   vec2 tex0;
   vec2 tex1;
   vec2 tex2;
-  vec3 normal;
-  vec3 tangent;
-  vec3 binormal;
 };
 
 VsOutput vs_main(VSInput input) {
@@ -43,13 +39,10 @@ VsOutput vs_main(VSInput input) {
   o.position = pvw * vec4(input.position, 1.0f);
   o.tex0 = input.tex0;
   o.tex1 = input.tex1 + time;
-  o.tex2 = input.tex2 + time;
+  o.tex2 = input.tex2;
   o.refract_position = pvw * vec4(input.position, 1.0);
   o.reflect_position = reflect_pvw * vec4(input.position, 1.0);
-
-  o.normal =   vec4(input.normal, 0.0);
-  o.tangent =  vec4(input.tangent, 0.0);
-  o.binormal = vec4(input.binormal, 0.0);
+  o.viewdir = camerapos - input.position;
   return o;
 }
 
@@ -58,12 +51,10 @@ vec4 ps_main(VsOutput o) {
   float reflect_scale = 0.03;
   vec4 bn1 = sample2D(bump_tex, o.tex1);
   vec4 bn2 = sample2D(bump_tex, o.tex2);
-  vec4 bn = (bn1 + bn2) * 0.5f;
-  bn = bn * 2.0f - 1.0f;
-  vec3 normal = normalize(bn.x * o.tangent.xyz +
-                          bn.y * o.binormal.xyz + bn.z * o.normal.xyz);
+  vec3 n1 = bn1.rgb * 2.0f - 1.0f;
+  vec3 n2 = bn2.rgb * 2.0f - 1.0f;
+  vec3 normal = normalize(n1 + n2);
 
-  float factor = 0.5;
   vec4 refract_tint = vec4(0.0f, 0.8f, 1.0f, 1.0f);
   vec2 refract_texcoord;
   refract_texcoord.x = o.refract_position.x / o.refract_position.w / 2.0f + 0.5f;
@@ -76,8 +67,13 @@ vec4 ps_main(VsOutput o) {
   reflect_texcoord.y = -o.reflect_position.y / o.reflect_position.w / 2.0f + 0.5f;
   // reflect_texcoord = reflect_texcoord + normal.xy * reflect_scale;
   vec4 reflect_color = sample2D(reflect_tex, reflect_texcoord);
-  vec4 color = refract_color * factor + reflect_color * (1.0f - factor);
 
+  vec3 heightview = normalize(vec3(o.viewdir.yyy));
+  float r = (1.2f - 1.0f) / (1.2f + 1.0f);
+
+  float factor = max(0.0f, min(1.0f, r + (1.0f - r) *
+                               pow(1.0f - dot(normal, heightview), 2)));
+  vec4 color = lerp(refract_color, reflect_color, factor);
   float diffuse_factor = clamp(dot(normal, normalize(-light.dir.xyz)), 0.0, 1.0);
   vec3 light_factor = light.ambient.xyz + light.diffuse.xyz * diffuse_factor;
   return vec4(light_factor.xyz * color.xyz, 1.0);

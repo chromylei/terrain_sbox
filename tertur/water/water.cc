@@ -10,11 +10,8 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
   CHECK(azer::LoadPixelShader(EFFECT_GEN_DIR SHADER_NAME ".ps", &shaders));
   effect_.reset(new WaterEffect(shaders.GetShaderVec(), rs));
 
-  float repeat_num = 8.0f;
-  std::vector<azer::Vector3> tangent, binormal;
+  float repeat_num = 32.0f;
   tile_.Init();
-  tile_.CalcNormal();
-  tile_.CalcTBN(repeat_num, &tangent, &binormal);
 
   int cnt = 0;
   azer::VertexData vdata(effect_->GetVertexDesc(), tile_.GetVertexNum());
@@ -26,9 +23,6 @@ bool Water::Init(const azer::Vector3& pos, azer::RenderSystem* rs) {
       v->tex0 = tile_.texcoord()[cnt];
       v->tex1 = tile_.texcoord()[cnt] * repeat_num;
       v->tex2 = tile_.texcoord()[cnt] * repeat_num * 2.0f;
-      v->normal = tile_.normal()[cnt];
-      v->binormal = binormal[cnt];
-      v->tangent = tangent[cnt];
       cnt++;
       v++;
     }
@@ -61,6 +55,7 @@ void Water::Render(double time, const azer::Camera& camera,
   azer::Matrix4 pvw = camera.GetProjViewMatrix();
   effect_->SetPVW(pvw);
   effect_->SetDirLight(light_);
+  effect_->SetCameraPos(camera.position());
   effect_->SetRefractTex(refract_target_->GetRTTex());
   effect_->SetReflectTex(reflect_->GetReflectTex());
   effect_->SetReflectPVW(reflect_->GetMirrorCamera().GetProjViewMatrix());
